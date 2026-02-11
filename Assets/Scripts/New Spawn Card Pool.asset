@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d481ff4adae7bec428620b5ad5dcacbf, type: 3}
+  m_Name: New Spawn Card Pool
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnCardPool
+  cards:
+  - {fileID: 11400000, guid: 411544a7f691e924cb3090b6e2991377, type: 2}
+  - {fileID: 11400000, guid: f0c5c62b99e45e145a7834595992aefd, type: 2}
