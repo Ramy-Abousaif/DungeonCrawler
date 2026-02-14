@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5096872230850856391}
   - component: {fileID: 8216157427199941579}
   - component: {fileID: 4143905622179341311}
+  - component: {fileID: 2036941136322207211}
   m_Layer: 18
   m_Name: WallCut
   m_TagString: Untagged
@@ -1048,6 +1049,22 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!208 &2036941136322207211
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6929320546142981227}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 45, y: 7.5, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &7342575972530432381
 GameObject:
   m_ObjectHideFlags: 0
@@ -1057,6 +1074,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7988725438016193176}
+  - component: {fileID: 2999560079567230604}
   m_Layer: 18
   m_Name: WallCut
   m_TagString: Untagged
@@ -1080,3 +1098,15 @@ Transform:
   - {fileID: 6111103100344481319}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!210 &2999560079567230604
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7342575972530432381}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0

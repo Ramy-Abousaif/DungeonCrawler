@@ -4,8 +4,14 @@ public class Door : Interactable
 {
     public RoomNode RoomA;
     public RoomNode RoomB;
+    private Animator anim;
 
     private bool isLocked;
+
+    void Awake()
+    {
+        anim = GetComponentInParent<Animator>();
+    }
 
     public void Initialize(RoomNode a, RoomNode b, bool locked)
     {
@@ -20,8 +26,12 @@ public class Door : Interactable
 
         // TODO:
         // - Change material
-        // - Enable collider
         // - Play animation
+    }
+
+    public void PlayDoorAnim(bool open)
+    {
+        anim.SetBool("Open", open);
     }
 
     public RoomNode GetOtherRoom(RoomNode current)
@@ -35,7 +45,7 @@ public class Door : Interactable
         {
             // TODO: Play anim rather than destroy
             isLocked = false;
-            Destroy(gameObject);
+            PlayDoorAnim(true);
         }
         else
         {

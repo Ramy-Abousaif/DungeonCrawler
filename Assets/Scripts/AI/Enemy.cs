@@ -5,6 +5,7 @@ public class Enemy : Character
 {
     [Header("Effects")]
     public GameObject deathEffect;
+    public System.Action OnDeath;
 
     protected override void OnDamageTaken(float damage, bool direct = false)
     {
@@ -30,6 +31,7 @@ public class Enemy : Character
     {
         currentHealth = 0f;
         PoolManager.Instance.Spawn(deathEffect, transform.position, Quaternion.identity);
+        OnDeath?.Invoke();
         Destroy(gameObject);
     }
 }

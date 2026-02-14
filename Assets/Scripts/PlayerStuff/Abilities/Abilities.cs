@@ -21,8 +21,6 @@ public class Abilities : MonoBehaviour
     [SerializeField] private PhysicsBasedCharacterController controller;
     [SerializeField] private AbilityEmitter[] baseEmitters;
     [SerializeField] private AbilityEmitter[] altEmitters;
-    [Header("Strafing")]
-    [SerializeField] private float strafingReleaseDelay = 0.25f;
 
     [System.Serializable]
     public class Ability

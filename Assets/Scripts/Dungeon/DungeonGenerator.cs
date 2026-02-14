@@ -34,6 +34,7 @@ public class DungeonGenerator : MonoBehaviour
     public GameObject wallDoorPrefab;
     public float wallHalfHeightOffset = 7.5f; // Adjust based on wall prefab
     public float doorHeightOffset = 0f; // Adjust based on door prefab
+    public float wallThickness = 0.5f; // how thick each wall is
 
     [Header("Locks")]
     [Range(0f, 1f)]
@@ -55,7 +56,6 @@ public class DungeonGenerator : MonoBehaviour
     {
         navMeshSurface.RemoveData();
         GenerateDungeon();
-        navMeshSurface.BuildNavMesh();
     }
 
     public void GenerateDungeon()
@@ -95,6 +95,9 @@ public class DungeonGenerator : MonoBehaviour
         SpawnRooms();
         SpawnDoors();
         BuildDungeonBoundaries();
+        navMeshSurface.BuildNavMesh();
+        FindFirstObjectByType<SpawnNodeManager>().Initialize();
+        InitializeVisibility();
     }
 
     void SpawnDoors()
@@ -131,6 +134,9 @@ public class DungeonGenerator : MonoBehaviour
 
                         Door door = doorGO.GetComponentInChildren<Door>();
                         door.Initialize(a, b, isLocked);
+
+                        a.Doors.Add(door);
+                        b.Doors.Add(door);
 
                         return; // Only one door per connection
                     }
@@ -394,16 +400,25 @@ public class DungeonGenerator : MonoBehaviour
             Vector3 worldPos = GetRoomWorldCenter(room);
 
             GameObject roomGO = Instantiate(entry.prefab, worldPos, Quaternion.identity, transform);
+            room.RoomObject = roomGO;
+
+            var visual = roomGO.GetComponent<RoomVisualController>();
+            visual.RoomNode = room;
+
+            room.VisualController = visual;
+            var trigger = roomGO.GetComponentInChildren<RoomTrigger>();
+            trigger.RoomNode = room;
+            trigger.visibilityManager = FindFirstObjectByType<DungeonVisibilityManager>();
 
             // Optional: store size on node for later door alignment
-            room.WorldSize = entry.gridSize;
+            room.WorldSize = entry.gridSize * entry.worldSize;
         }
     }
 
     Vector3 GetRoomWorldCenter(RoomNode room)
     {
-        float offsetX = (room.Size.x - 1) * 0.5f;
-        float offsetZ = (room.Size.y - 1) * 0.5f;
+        float offsetX = (room.GridSize.x - 1) * 0.5f;
+        float offsetZ = (room.GridSize.y - 1) * 0.5f;
 
         return new Vector3(
             (room.GridPosition.x + offsetX) * roomSize,
@@ -428,7 +443,7 @@ public class DungeonGenerator : MonoBehaviour
     {
         room.OccupiedTiles.Clear();
         room.GridPosition = basePos;
-        room.Size = size;
+        room.GridSize = size;
 
         for (int x = 0; x < size.x; x++)
             for (int z = 0; z < size.y; z++)
@@ -441,47 +456,58 @@ public class DungeonGenerator : MonoBehaviour
 
     void BuildDungeonBoundaries()
     {
-        HashSet<Vector3Int> allTiles = new HashSet<Vector3Int>();
-
         foreach (var room in Graph.Rooms)
-            foreach (var tile in room.OccupiedTiles)
-                allTiles.Add(tile);
-
-        foreach (var tile in allTiles)
         {
-            foreach (Cardinal dir in System.Enum.GetValues(typeof(Cardinal)))
+            foreach (var tile in room.OccupiedTiles)
             {
-                Vector3Int neighborTile = tile + DirectionToGridOffset(dir);
-
-                bool neighborExists = allTiles.Contains(neighborTile);
-
-                RoomNode roomA = GetRoomAtTile(tile);
-                RoomNode roomB = GetRoomAtTile(neighborTile);
-
-                Vector3 wallWorldPos = GetWallWorldPosition(tile, dir, wallHalfHeightOffset);
-
-                if (!neighborExists)
+                foreach (Cardinal dir in System.Enum.GetValues(typeof(Cardinal)))
                 {
-                    InstantiateWall(tile, wallSolidPrefab, wallWorldPos, GetWallRotation(dir), transform);
-                }
-                else if (roomA != roomB && AreRoomsConnected(roomA, roomB))
-                {
-                    InstantiateWall(tile, wallDoorPrefab, wallWorldPos, GetWallRotation(dir), transform);
-                }
-                else if (roomA != roomB)
-                {
-                    InstantiateWall(tile, wallSolidPrefab, wallWorldPos, GetWallRotation(dir), transform);
+                    // Always instantiate a wall for this room
+                    Vector3 wallWorldPos = GetWallWorldPosition(tile, dir, wallHalfHeightOffset, true);
+                    Quaternion wallRot = GetWallRotation(dir);
+
+                    GameObject prefabToUse = wallSolidPrefab;
+
+                    // If this direction leads to a connected room, use door wall prefab
+                    Vector3Int neighborTile = tile + DirectionToGridOffset(dir);
+                    if (tileToRoom.TryGetValue(neighborTile, out var neighborRoom))
+                    {
+                        if (neighborRoom != room && AreRoomsConnected(room, neighborRoom))
+                        {
+                            prefabToUse = wallDoorPrefab;
+                        }
+                    }
+
+                    InstantiateWall(tile, prefabToUse, wallWorldPos, wallRot);
                 }
             }
         }
     }
 
-    private void InstantiateWall(Vector3Int tile, GameObject prefab, Vector3 pos, Quaternion rot, Transform t)
+    void InitializeVisibility()
     {
-        GameObject wallGO = Instantiate(prefab, pos, rot, t);
-        for(int i = 0; i < wallGO.transform.childCount; i++)
+        foreach (var room in Graph.Rooms)
         {
-            wallGO.transform.GetChild(i).GetComponent<Renderer>().material = prefabDatabase.GetEntry(GetRoomAtTile(tile).Type).mat;   
+            room.VisualController.AssignLightsAndRenderers();
+        }
+    }
+
+    private void InstantiateWall(Vector3Int tile, GameObject prefab, Vector3 pos, Quaternion rot)
+    {
+        RoomNode room = GetRoomAtTile(tile);
+        if (room == null || room.RoomObject == null)
+            return;
+
+        Transform parent = room.RoomObject.transform;
+
+        GameObject wallGO = Instantiate(prefab, pos, rot, parent);
+
+        // Apply room material to all children renderers
+        for (int i = 0; i < wallGO.transform.childCount; i++)
+        {
+            Renderer r = wallGO.transform.GetChild(i).GetComponent<Renderer>();
+            if (r != null)
+                r.material = prefabDatabase.GetEntry(room.Type).mat;
         }
     }
 
@@ -495,7 +521,7 @@ public class DungeonGenerator : MonoBehaviour
         return a.Connections.Any(c => c.Target == b);
     }
 
-    Vector3 GetWallWorldPosition(Vector3Int tile, Cardinal dir, float verticalOffset)
+    Vector3 GetWallWorldPosition(Vector3Int tile, Cardinal dir, float verticalOffset, bool pushOutward = true)
     {
         Vector3 basePos = new Vector3(
             tile.x * roomSize,
@@ -503,15 +529,29 @@ public class DungeonGenerator : MonoBehaviour
             tile.z * roomSize
         );
 
-        switch (dir)
+        Vector3 normal = dir switch
         {
-            case Cardinal.North: return basePos + new Vector3(0, 0, roomSize * 0.5f);
-            case Cardinal.South: return basePos + new Vector3(0, 0, -roomSize * 0.5f);
-            case Cardinal.East:  return basePos + new Vector3(roomSize * 0.5f, 0, 0);
-            case Cardinal.West:  return basePos + new Vector3(-roomSize * 0.5f, 0, 0);
-        }
+            Cardinal.North => Vector3.forward,
+            Cardinal.South => Vector3.back,
+            Cardinal.East  => Vector3.right,
+            Cardinal.West  => Vector3.left,
+            _ => Vector3.zero
+        };
 
-        return basePos;
+        // pushOutward moves the wall away from the room along the normal
+        float offset = pushOutward ? wallThickness * 0.5f : 0f;
+
+        // main tile offset to position wall at tile edge
+        Vector3 tileOffset = dir switch
+        {
+            Cardinal.North => new Vector3(0, 0, roomSize * 0.5f),
+            Cardinal.South => new Vector3(0, 0, -roomSize * 0.5f),
+            Cardinal.East  => new Vector3(roomSize * 0.5f, 0, 0),
+            Cardinal.West  => new Vector3(-roomSize * 0.5f, 0, 0),
+            _ => Vector3.zero
+        };
+
+        return basePos + tileOffset + normal * offset;
     }
 
     Quaternion GetWallRotation(Cardinal dir)

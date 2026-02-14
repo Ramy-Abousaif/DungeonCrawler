@@ -1512,7 +1512,7 @@ MonoBehaviour:
   losOrigin: {fileID: 8398779289712365580}
   losBlockMask:
     serializedVersion: 2
-    m_Bits: 8193
+    m_Bits: 925697
   losMaxDistance: 50
   faction: 1
   windupTime: 0.3

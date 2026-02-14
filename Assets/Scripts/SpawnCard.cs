@@ -14,8 +14,4 @@ public class SpawnCard : ScriptableObject
     public float cost = 10f;
 
     public HullSize hullSize;
-    public bool isFlying;
-    public float airHeight = 20f;
-    public float minDistance = 15f;
-    public float maxDistance = 60f;
 }

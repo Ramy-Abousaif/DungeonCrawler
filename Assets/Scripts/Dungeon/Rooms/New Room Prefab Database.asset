@@ -16,35 +16,42 @@ MonoBehaviour:
   - type: 0
     prefab: {fileID: 8452953490372523148, guid: 32e1c79596ea7b74881846d69bc2cb83, type: 3}
     mat: {fileID: 2100000, guid: f03db3c8358412040bc0b83a1fb8dfbf, type: 2}
+    worldSize: {x: 90, y: 90}
     gridSize: {x: 1, y: 1}
     height: 15
   - type: 1
     prefab: {fileID: 8452953490372523148, guid: 32e1c79596ea7b74881846d69bc2cb83, type: 3}
     mat: {fileID: 2100000, guid: 11f73dd531a962d4b9ae9b3474613fa4, type: 2}
+    worldSize: {x: 0, y: 0}
     gridSize: {x: 1, y: 1}
     height: 15
   - type: 2
     prefab: {fileID: 8452953490372523148, guid: 32e1c79596ea7b74881846d69bc2cb83, type: 3}
     mat: {fileID: 2100000, guid: b83989231a1bb9f4aa9515e9212c34b0, type: 2}
+    worldSize: {x: 90, y: 90}
     gridSize: {x: 1, y: 1}
     height: 15
   - type: 3
     prefab: {fileID: 8452953490372523148, guid: 32e1c79596ea7b74881846d69bc2cb83, type: 3}
     mat: {fileID: 2100000, guid: e72587bff4421b142925287d5bca264a, type: 2}
+    worldSize: {x: 90, y: 90}
     gridSize: {x: 1, y: 1}
     height: 15
   - type: 4
     prefab: {fileID: 8452953490372523148, guid: 32e1c79596ea7b74881846d69bc2cb83, type: 3}
     mat: {fileID: 2100000, guid: eace8f1c3fce82f40911788cb644b8be, type: 2}
+    worldSize: {x: 90, y: 90}
     gridSize: {x: 1, y: 1}
     height: 15
   - type: 5
     prefab: {fileID: 8452953490372523148, guid: 32e1c79596ea7b74881846d69bc2cb83, type: 3}
     mat: {fileID: 2100000, guid: 667c2a2f42054874f9c2c0ca7de0f3ad, type: 2}
+    worldSize: {x: 90, y: 90}
     gridSize: {x: 1, y: 1}
     height: 15
   - type: 6
     prefab: {fileID: 8452953490372523148, guid: 32e1c79596ea7b74881846d69bc2cb83, type: 3}
     mat: {fileID: 2100000, guid: a6d6f8b54f733b54fb9d7ec3915c6e43, type: 2}
+    worldSize: {x: 90, y: 90}
     gridSize: {x: 1, y: 1}
     height: 15

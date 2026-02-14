@@ -12,6 +12,7 @@ public class RoomPrefabDatabase : ScriptableObject
         public Material mat;
 
         [Header("Layout")]
+        public Vector2 worldSize;
         public Vector2Int gridSize = Vector2Int.one;
         public int height = 1;
     }

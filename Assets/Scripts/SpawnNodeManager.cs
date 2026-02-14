@@ -19,7 +19,7 @@ public class SpawnNodeManager : MonoBehaviour
     private Transform player;
     private Vector3 lastValidNavPos;
 
-    private void Awake()
+    public void Initialize()
     {
         player = GameObject.FindWithTag("Player").transform;
         if (NavMesh.SamplePosition(player.position, out var hit, 100f, NavMesh.AllAreas))
@@ -46,7 +46,6 @@ public class SpawnNodeManager : MonoBehaviour
 
             Vector3 candidate = lastValidNavPos + random;
 
-            // Increase sample radius to be safe
             if (NavMesh.SamplePosition(candidate, out var hit, sampleRadius, NavMesh.AllAreas))
             {
                 nodes.Add(new SpawnNode { position = hit.position });
@@ -54,6 +53,41 @@ public class SpawnNodeManager : MonoBehaviour
 
             attempts++;
         }
+    }
+
+    public SpawnNode GetValidNodeInRoom(SpawnCard card, RoomNode room)
+    {
+        List<SpawnNode> validNodes = new List<SpawnNode>();
+
+        foreach (var node in nodes)
+        {
+            if (!IsNodeInsideRoom(node.position, room))
+                continue;
+
+            float radius = GetHullRadius(card.hullSize);
+
+            if (Physics.CheckSphere(node.position, radius, obstacleLayer))
+                continue;
+
+            validNodes.Add(node);
+        }
+
+        if (validNodes.Count == 0)
+            return null;
+
+        return validNodes[Random.Range(0, validNodes.Count)];
+    }
+
+    private bool IsNodeInsideRoom(Vector3 position, RoomNode room)
+    {
+        Vector3 center = room.RoomObject.transform.position;
+
+        Debug.Log(room.WorldSize);
+        float halfX = room.WorldSize.x * 0.5f;
+        float halfZ = room.WorldSize.y * 0.5f;
+
+        return Mathf.Abs(position.x - center.x) <= halfX &&
+            Mathf.Abs(position.z - center.z) <= halfZ;
     }
 
     public SpawnNode GetValidNode(SpawnCard card)
@@ -67,17 +101,6 @@ public class SpawnNodeManager : MonoBehaviour
             if (Physics.CheckSphere(node.position, radius, obstacleLayer))
                 continue;
 
-            float dist = Vector2.Distance(
-                new Vector2(node.position.x, node.position.z),
-                new Vector2(lastValidNavPos.x, lastValidNavPos.z)
-            );
-
-            if (dist < card.minDistance || dist > card.maxDistance)
-                continue;
-
-            if (HasLineOfSight(node.position))
-                continue;
-
             validNodes.Add(node);
         }
 
@@ -85,36 +108,6 @@ public class SpawnNodeManager : MonoBehaviour
             return null;
 
         return validNodes[Random.Range(0, validNodes.Count)];
-    }
-
-    private bool HasLineOfSight(Vector3 pos)
-    {
-        Camera cam = Camera.main;
-        if (!cam)
-            return false;
-
-        Vector3 eye = cam.transform.position;
-        Vector3 dir = pos - eye;
-        float dist = dir.magnitude;
-
-        // World geometry blocks fairness
-        if (Physics.Raycast(eye, dir.normalized, dist, worldLayer))
-            return false;
-
-        return true;
-    }
-
-    private SpawnNode GetFlyingNode(SpawnCard card)
-    {
-        Vector3 pos = lastValidNavPos;
-
-        Vector2 circle = Random.insideUnitCircle.normalized *
-                        Random.Range(card.minDistance, card.maxDistance);
-
-        pos += new Vector3(circle.x, 0f, circle.y);
-        pos.y += card.airHeight;
-
-        return new SpawnNode { position = pos };
     }
 
     private float GetHullRadius(HullSize size)
