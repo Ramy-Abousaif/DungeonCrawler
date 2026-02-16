@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7da096c3f12c5845bd2bebab64a2fd2, type: 3}
-  m_Name: Shadow
+  m_Name: BasePriest
   m_EditorClassIdentifier: Assembly-CSharp::CharacterForm
-  moveSpeedMultiplier: 2
-  damageMultiplier: 2
-  canFly: 1
+  moveSpeedMultiplier: 1
+  damageMultiplier: 1
+  canFly: 0
   abilities:
-  - stateName: 
-    icon: {fileID: 21300000, guid: 3508a778c27d1af4fa67bc338cc2eeab, type: 3}
+  - stateName: Main Attack
+    icon: {fileID: 21300000, guid: bdbf58656a8871a4e85d139cf63eb6f8, type: 3}
     layerIndex: 1
-    useAnimationEvent: 0
-    abilityType: 3
+    useAnimationEvent: 1
+    abilityType: 0
     abilityEmitter: {fileID: 0}
     baseAbilityCooldown: 0
     currentAbilityCooldown: 0
     baseAbilityRange: 2
-    currentAbilityRange: 3
+    currentAbilityRange: 2
     baseAbilitySpeed: 2
-    currentAbilitySpeed: 4
+    currentAbilitySpeed: 2
     baseAbilityDamage: 10
     currentAbilityDamage: 10
     affectedByAttackSpeed: 1
@@ -37,56 +37,56 @@ MonoBehaviour:
     clip: {fileID: 7400000, guid: 0c9c1b5af45660b4b847909d66f7abe8, type: 2}
     isPlaying: 0
     playTimer: 0
-  - stateName: 
-    icon: {fileID: 21300000, guid: 1c20aa2e09b6e134ebf23cf41d4429e9, type: 3}
+  - stateName: Secondary Attack
+    icon: {fileID: 21300000, guid: 3c24ba6817929524abf970a3ee5fb85b, type: 3}
     layerIndex: 1
-    useAnimationEvent: 0
-    abilityType: 4
+    useAnimationEvent: 1
+    abilityType: 6
     abilityEmitter: {fileID: 0}
-    baseAbilityCooldown: 3
-    currentAbilityCooldown: 3
-    baseAbilityRange: 2
-    currentAbilityRange: 2
-    baseAbilitySpeed: 0
-    currentAbilitySpeed: 0
-    baseAbilityDamage: 4
-    currentAbilityDamage: 4
+    baseAbilityCooldown: 20
+    currentAbilityCooldown: 20
+    baseAbilityRange: 25
+    currentAbilityRange: 25
+    baseAbilitySpeed: 2
+    currentAbilitySpeed: 2
+    baseAbilityDamage: 50
+    currentAbilityDamage: 50
     affectedByAttackSpeed: 0
     stunnable: 0
     stunDuration: 0
     cooldownTimer: 0
-    clip: {fileID: 0}
+    clip: {fileID: 7400000, guid: 1b45ecd8fefd2e0499ac495d04299860, type: 2}
     isPlaying: 0
     playTimer: 0
-  - stateName: Third Attack Transformed
-    icon: {fileID: 21300000, guid: 9ed3e537dfcd17145a1a8b7bfdecacad, type: 3}
+  - stateName: Third Attack
+    icon: {fileID: 21300000, guid: 1fdd1727cc8901f4a8dd1d5991823944, type: 3}
     layerIndex: 1
-    useAnimationEvent: 0
-    abilityType: 5
+    useAnimationEvent: 1
+    abilityType: 7
     abilityEmitter: {fileID: 0}
-    baseAbilityCooldown: 10
-    currentAbilityCooldown: 10
-    baseAbilityRange: 3
-    currentAbilityRange: 3
-    baseAbilitySpeed: 1
-    currentAbilitySpeed: 1
-    baseAbilityDamage: 2
-    currentAbilityDamage: 2
+    baseAbilityCooldown: 5
+    currentAbilityCooldown: 5
+    baseAbilityRange: 2
+    currentAbilityRange: 2
+    baseAbilitySpeed: 2
+    currentAbilitySpeed: 2
+    baseAbilityDamage: 40
+    currentAbilityDamage: 40
     affectedByAttackSpeed: 0
     stunnable: 0
     stunDuration: 0
-    cooldownTimer: 3.9996047
-    clip: {fileID: 0}
+    cooldownTimer: 0
+    clip: {fileID: 7400000, guid: 83afbb8aad3cbcc41b5ff19112b69806, type: 2}
     isPlaying: 0
     playTimer: 0
   - stateName: 
-    icon: {fileID: 21300000, guid: 7538e31a3e5ae6840a58e7eeaf2f097f, type: 3}
+    icon: {fileID: 21300000, guid: e24e204661960ac4a877884eddd080f5, type: 3}
     layerIndex: 1
     useAnimationEvent: 0
-    abilityType: 6
+    abilityType: 1
     abilityEmitter: {fileID: 0}
-    baseAbilityCooldown: 0
-    currentAbilityCooldown: 0
+    baseAbilityCooldown: 40
+    currentAbilityCooldown: 40
     baseAbilityRange: 0
     currentAbilityRange: 0
     baseAbilitySpeed: 0

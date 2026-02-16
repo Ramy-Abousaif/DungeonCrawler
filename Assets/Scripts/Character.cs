@@ -13,6 +13,8 @@ public abstract class Character : MonoBehaviour
     [Header("Health")]
     [SerializeField] protected float maxHealth = 100f;
     [SerializeField] protected float currentHealth;
+    private bool isInvulnerable = false;
+    public bool IsInvulnerable { get { return isInvulnerable; } set { isInvulnerable = value; } }
 
     [Header("Defense / Stats")]
     [SerializeField] protected float armor = 0f;
@@ -148,6 +150,9 @@ public abstract class Character : MonoBehaviour
     /// <param name="direct">True if bypasses effects like camera shake</param>
     public virtual void TakeDamage(float damage, bool direct = false)
     {
+        if(isInvulnerable)
+            return;
+        
         float finalDamage = CalculateDamage(damage);
 
         currentHealth -= finalDamage;

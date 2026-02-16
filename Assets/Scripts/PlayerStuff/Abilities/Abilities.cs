@@ -12,6 +12,8 @@ public enum AbilityType
     HITSCAN,
     BLINK,
     SUMMON,
+    BARRIER,
+    AURA,
     BLANK
 }
 
@@ -427,7 +429,9 @@ public class Abilities : MonoBehaviour
 
         if ((a.abilityEmitter.supportedType == AbilityType.TRANSFORM ||
             a.abilityEmitter.supportedType == AbilityType.BLINK ||
-            a.abilityEmitter.supportedType == AbilityType.SUMMON) &&
+            a.abilityEmitter.supportedType == AbilityType.SUMMON ||
+            a.abilityEmitter.supportedType == AbilityType.BARRIER ||
+            a.abilityEmitter.supportedType == AbilityType.AURA) &&
             !_isAttacking)
         {
             if (a.cooldownTimer > 0f)

@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7da096c3f12c5845bd2bebab64a2fd2, type: 3}
+  m_Name: SoldierOfGod
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterForm
+  moveSpeedMultiplier: 1
+  damageMultiplier: 2
+  canFly: 0
+  abilities:
+  - stateName: Main Attack
+    icon: {fileID: 21300000, guid: 7790db612fa89e547a967b01ecae08a3, type: 3}
+    layerIndex: 1
+    useAnimationEvent: 1
+    abilityType: 0
+    abilityEmitter: {fileID: 0}
+    baseAbilityCooldown: 0
+    currentAbilityCooldown: 0
+    baseAbilityRange: 2
+    currentAbilityRange: 3
+    baseAbilitySpeed: 2
+    currentAbilitySpeed: 2
+    baseAbilityDamage: 10
+    currentAbilityDamage: 10
+    affectedByAttackSpeed: 1
+    stunnable: 0
+    stunDuration: 0
+    cooldownTimer: 0
+    clip: {fileID: 7400000, guid: 0c9c1b5af45660b4b847909d66f7abe8, type: 2}
+    isPlaying: 0
+    playTimer: 0
+  - stateName: 
+    icon: {fileID: 21300000, guid: 729ef766480ae8a44a1f0bf56297a0b3, type: 3}
+    layerIndex: 1
+    useAnimationEvent: 0
+    abilityType: 0
+    abilityEmitter: {fileID: 0}
+    baseAbilityCooldown: 3
+    currentAbilityCooldown: 3
+    baseAbilityRange: 2
+    currentAbilityRange: 2
+    baseAbilitySpeed: 0
+    currentAbilitySpeed: 0
+    baseAbilityDamage: 4
+    currentAbilityDamage: 4
+    affectedByAttackSpeed: 0
+    stunnable: 1
+    stunDuration: 2
+    cooldownTimer: 0
+    clip: {fileID: 0}
+    isPlaying: 0
+    playTimer: 0
+  - stateName: Third Attack Transformed
+    icon: {fileID: 21300000, guid: 01f159dfb9793324f80e8566b79cbbe9, type: 3}
+    layerIndex: 1
+    useAnimationEvent: 0
+    abilityType: 2
+    abilityEmitter: {fileID: 0}
+    baseAbilityCooldown: 10
+    currentAbilityCooldown: 10
+    baseAbilityRange: 3
+    currentAbilityRange: 3
+    baseAbilitySpeed: 1
+    currentAbilitySpeed: 1
+    baseAbilityDamage: 2
+    currentAbilityDamage: 2
+    affectedByAttackSpeed: 0
+    stunnable: 0
+    stunDuration: 0
+    cooldownTimer: 0
+    clip: {fileID: 0}
+    isPlaying: 0
+    playTimer: 0
+  - stateName: 
+    icon: {fileID: 21300000, guid: 0d4087f4c37b37645a4a1dca2eee74e7, type: 3}
+    layerIndex: 1
+    useAnimationEvent: 0
+    abilityType: 2
+    abilityEmitter: {fileID: 0}
+    baseAbilityCooldown: 20
+    currentAbilityCooldown: 20
+    baseAbilityRange: 30
+    currentAbilityRange: 30
+    baseAbilitySpeed: 1
+    currentAbilitySpeed: 1
+    baseAbilityDamage: 100
+    currentAbilityDamage: 100
+    affectedByAttackSpeed: 0
+    stunnable: 1
+    stunDuration: 2
+    cooldownTimer: 0
+    clip: {fileID: 0}
+    isPlaying: 0
+    playTimer: 0

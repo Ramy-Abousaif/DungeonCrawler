@@ -7,6 +7,7 @@ public class RoomTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"Entering room {RoomNode.Id}, cleared = {RoomNode.IsCleared}");
         if (!other.CompareTag("Player"))
             return;
 

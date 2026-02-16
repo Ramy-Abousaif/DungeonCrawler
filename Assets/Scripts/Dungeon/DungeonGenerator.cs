@@ -60,6 +60,8 @@ public class DungeonGenerator : MonoBehaviour
 
     public void GenerateDungeon()
     {
+        ClearDungeon();
+
         int attempts = 0;
         bool valid = false;
 
@@ -76,8 +78,8 @@ public class DungeonGenerator : MonoBehaviour
 
             GenerateGraph();
             AssignRoomTypes();
-            LayoutRooms();
             GenerateSecretRooms();
+            LayoutRooms();
             GenerateLoops();
             ApplyLocks();
 
@@ -113,6 +115,16 @@ public class DungeonGenerator : MonoBehaviour
                 SpawnDoorBetween(room, connection.Target, connection.IsLocked);
             }
         }
+    }
+
+    void ClearDungeon()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(transform.GetChild(i).gameObject);
+        }
+
+        tileToRoom.Clear();
     }
 
     void SpawnDoorBetween(RoomNode a, RoomNode b, bool isLocked)

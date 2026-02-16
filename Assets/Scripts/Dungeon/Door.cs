@@ -7,6 +7,8 @@ public class Door : Interactable
     private Animator anim;
 
     private bool isLocked;
+    private bool connectionLocked;
+    private bool combatLocked;
 
     void Awake()
     {
@@ -17,16 +19,28 @@ public class Door : Interactable
     {
         RoomA = a;
         RoomB = b;
-        SetLocked(locked);
+
+        connectionLocked = locked;
+        combatLocked = false;
+
+        UpdateLockState();
     }
 
-    public void SetLocked(bool locked)
+    public void SetCombatLocked(bool locked)
     {
-        isLocked = locked;
+        combatLocked = locked;
+        UpdateLockState();
+    }
 
-        // TODO:
-        // - Change material
-        // - Play animation
+    public void SetConnectionLocked(bool locked)
+    {
+        connectionLocked = locked;
+        UpdateLockState();
+    }
+
+    void UpdateLockState()
+    {
+        isLocked = connectionLocked || combatLocked;
     }
 
     public void PlayDoorAnim(bool open)

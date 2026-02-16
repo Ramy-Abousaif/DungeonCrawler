@@ -20,12 +20,16 @@ public class AbilitiyEffects : MonoBehaviour
     public void OnThrow(int index)
     {
         var _abilities = transform.root.GetComponent<Abilities>().abilities;
-        _abilities[index].abilityEmitter.optionalHeldItem.SetActive(false);
+        var heldItem = _abilities[index].abilityEmitter.optionalHeldItem;
+        if(heldItem != null)
+            heldItem.SetActive(false);
     }
 
     public void Restore(int index)
     {
         var _abilities = transform.root.GetComponent<Abilities>().abilities;
-        _abilities[index].abilityEmitter.optionalHeldItem.SetActive(true);
+        var heldItem = _abilities[index].abilityEmitter.optionalHeldItem;
+        if(heldItem != null)
+            heldItem.SetActive(true);
     }
 }

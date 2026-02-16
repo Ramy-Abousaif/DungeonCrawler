@@ -21,12 +21,13 @@ public class RoomCombatController : MonoBehaviour
 
     public void StartCombat()
     {
+        if(roomNode.Type != RoomType.Combat)
+            return;
+
         if (roomNode.IsCleared)
             return;
 
-        Debug.Log("STARTING COMBAT");
-
-        GenerateWaves();   // 👈 NEW
+        GenerateWaves();
 
         currentWaveIndex = 0;
         aliveEnemies = 0;
@@ -38,10 +39,10 @@ public class RoomCombatController : MonoBehaviour
     IEnumerator StartNextWave(float delay)
     {
         yield return new WaitForSeconds(currentWaveIndex == 0 ? 0.5f : delay);
+
         if (currentWaveIndex >= waves.Count)
         {
             CombatComplete();
-            Debug.Log("Defeated all enemies in room");
             yield break;
         }
 
@@ -50,7 +51,6 @@ public class RoomCombatController : MonoBehaviour
         foreach (var card in wave.enemies)
         {
             SpawnEnemy(card);
-            yield return new WaitForSeconds(0.2f);
         }
 
         currentWaveIndex++;
@@ -82,6 +82,11 @@ public class RoomCombatController : MonoBehaviour
     void CombatComplete()
     {
         roomNode.IsCleared = true;
+
+        foreach (var door in roomNode.Doors)
+        {
+            door.SetCombatLocked(false);
+        }
     }
 
     List<SpawnCard> GenerateEnemiesForWave(float difficulty, int waveIndex)
@@ -130,6 +135,7 @@ public class RoomCombatController : MonoBehaviour
     {
         foreach (var door in roomNode.Doors)
         {
+            door.SetCombatLocked(true);
             door.PlayDoorAnim(false);
         }
     }

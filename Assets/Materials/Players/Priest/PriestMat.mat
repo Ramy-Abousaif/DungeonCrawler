@@ -107,9 +107,9 @@ Material:
     - _EnvironmentReflections: 1
     - _FlashAmount: 0
     - _FormAmount: 0
-    - _FresnelAmount: 2
+    - _FresnelAmount: 6.68
     - _Gamma: 1
-    - _GlitchStrength: 0.5
+    - _GlitchStrength: 0.07
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -140,8 +140,8 @@ Material:
     - _DissolveColor: {r: 3.580254, g: 0, b: 8, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FlashColor: {r: 4, g: 4, b: 4, a: 1}
-    - _InnerFresnel: {r: 0.22819194, g: 0, b: 0.33018863, a: 1}
-    - _OuterFresnel: {r: 0.5979567, g: 0, b: 1, a: 1}
+    - _InnerFresnel: {r: 1, g: 1, b: 1, a: 1}
+    - _OuterFresnel: {r: 3.482202, g: 3.4802706, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
