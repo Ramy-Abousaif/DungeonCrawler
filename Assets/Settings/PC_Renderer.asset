@@ -83,7 +83,7 @@ MonoBehaviour:
     BlitMaterial: {fileID: 2100000, guid: b39312f2ccad79640a3b74d64475a027, type: 2}
     ClearDepth: 0
   MaterialSettings:
-    OutlineScale: 0.43
+    OutlineScale: 0.642576
     RobertsCrossMultiplier: 10000
     DepthThreshold: 0.85
     NormalThreshold: 0.76
@@ -136,7 +136,7 @@ MonoBehaviour:
     BlitMaterial: {fileID: 2100000, guid: f0b9da98450f2ac42afbca16134aab5b, type: 2}
     ClearDepth: 0
   MaterialSettings:
-    OutlineScale: 0.43
+    OutlineScale: 0.642576
     RobertsCrossMultiplier: 10000
     DepthThreshold: 0.85
     NormalThreshold: 0.76

@@ -39,7 +39,7 @@ Material:
     m_Floats:
     - _DepthThreshold: 0.85
     - _NormalThreshold: 0.76
-    - _OutlineScale: 0.43
+    - _OutlineScale: 0.642576
     - _RobertsCrossMultiplier: 10000
     - _SteepAngleMultiplier: 25
     - _SteepAngleThreshold: 0.11

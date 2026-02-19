@@ -28070,7 +28070,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5496febecbd052141b1efb1db1ee2021, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEmitter
-  supportedType: 6
+  supportedType: 8
   firePoint: {fileID: 0}
   abilityEffect: {fileID: 0}
   optionalHeldItem: {fileID: 0}
