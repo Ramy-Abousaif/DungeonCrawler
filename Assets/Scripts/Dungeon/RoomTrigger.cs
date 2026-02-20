@@ -2,25 +2,14 @@ using UnityEngine;
 
 public class RoomTrigger : MonoBehaviour
 {
-    public RoomNode RoomNode;
-    public DungeonVisibilityManager visibilityManager;
+    public DungeonRoom roomData;
+    public DungeonVisibilityController visibilityController;
 
-    private void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"Entering room {RoomNode.Id}, cleared = {RoomNode.IsCleared}");
-        if (!other.CompareTag("Player"))
-            return;
-
-        visibilityManager.SetCurrentRoom(RoomNode);
-
-        if (!RoomNode.IsCleared)
+        if (other.CompareTag("Player"))
         {
-            var combat = RoomNode.RoomObject.GetComponent<RoomCombatController>();
-            if (combat != null)
-            {
-                combat.Initialize(RoomNode);
-                combat.StartCombat();
-            }
+            visibilityController.EnterRoom(roomData);
         }
     }
 }

@@ -1,6 +1,6 @@
-using UnityEngine;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public enum RoomVisualState
 {
@@ -12,8 +12,8 @@ public enum RoomVisualState
 
 public class RoomVisualController : MonoBehaviour
 {
-    public RoomNode RoomNode;
-
+    public DungeonRoom roomData;
+    
     private Renderer[] renderers;
     private Light[] lights;
 
@@ -33,15 +33,11 @@ public class RoomVisualController : MonoBehaviour
 
     private static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
 
-    void Awake()
-    {
-        AssignLightsAndRenderers();
-    }
-
     public void AssignLightsAndRenderers()
     {
         renderers = GetComponentsInChildren<Renderer>(true);
         lights = GetComponentsInChildren<Light>(true);
+        Debug.Log(renderers.Length);
 
         // Cache light intensities
         foreach (var l in lights)
@@ -69,6 +65,10 @@ public class RoomVisualController : MonoBehaviour
 
     public void SetState(RoomVisualState state)
     {
+        if (renderers == null || renderers.Length == 0)
+        {
+            AssignLightsAndRenderers();
+        }
         float multiplier = state switch
         {
             RoomVisualState.Active => activeMultiplier,
@@ -86,16 +86,22 @@ public class RoomVisualController : MonoBehaviour
 
     IEnumerator LerpVisuals(float multiplier)
     {
+        if (this == null) yield break;
+        if (!gameObject.activeInHierarchy) yield break;
         float time = 0f;
 
         Dictionary<Light, float> startLightValues = new();
         Dictionary<Renderer, Color> startColorValues = new();
 
         foreach (var l in lights)
-            startLightValues[l] = l.intensity;
+        {
+            if (l == null) continue;
+            startLightValues[l] = l.intensity;            
+        }
 
         foreach (var r in renderers)
         {
+            if (r == null) continue;
             var block = propertyBlocks[r];
             r.GetPropertyBlock(block);
 

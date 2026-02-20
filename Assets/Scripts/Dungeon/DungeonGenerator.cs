@@ -1,785 +1,396 @@
 using System.Collections.Generic;
-using System.Linq;
 using Unity.AI.Navigation;
 using UnityEngine;
 
-enum Cardinal { North, South, East, West }
-
 public class DungeonGenerator : MonoBehaviour
 {
-    [Header("Seed")]
-    public bool useRandomSeed = true;
-    public int seed = 12345;
+    public int targetRoomCount = 12;
 
-    [Header("Generation Settings")]
-    public int maxRooms = 20;
-    public int minBranches = 1;
-    public int maxBranches = 3;
+    [Header("Special Room Weights")]
+    [Range(0f, 1f)] public float treasureChance = 0.4f;
+    [Range(0f, 1f)] public float shopChance = 0.3f;
+    [Range(0f, 1f)] public float secretChance = 0.2f;
 
-    [Header("Validation")]
-    public int minimumBossDepth = 6;
-    public int maxGenerationAttempts = 10;
+    public int maxTreasureRooms = 1;
+    public int maxShopRooms = 1;
+    public int maxSecretRooms = 1;
 
-    [Header("Loops")]
-    [Range(0f, 1f)]
-    public float loopChance = 0.15f;
+    [Header("Room Visibility Settings")]
+    public float roomVisibilityTriggerPadding = 1f;
 
-    [Header("Layout Settings")]
-    public int roomSize = 20;
-    public int floorHeight = 10;
-
-    [Header("Wall/Door")]
-    public GameObject doorPrefab;
-    public GameObject wallSolidPrefab;
-    public GameObject wallDoorPrefab;
-    public float wallHalfHeightOffset = 7.5f; // Adjust based on wall prefab
-    public float doorHeightOffset = 0f; // Adjust based on door prefab
-    public float wallThickness = 0.5f; // how thick each wall is
-
-    [Header("Locks")]
-    [Range(0f, 1f)]
-    public float lockChance = 0.2f;
-
-    [Header("Secrets")]
-    public int secretRoomCount = 1;
-
-    [Header("Prefabs")]
-    public RoomPrefabDatabase prefabDatabase;
-    [Header("Navmesh")]
+    [Header("Prefabs/Assigns")]
+    public GameObject startRoomPrefab;
+    public GameObject normalRoomPrefab;
+    public GameObject bossRoomPrefab;
+    public GameObject treasureRoomPrefab;
+    public GameObject shopRoomPrefab;
+    public GameObject secretRoomPrefab;
+    public RoomGenerator roomTemplate;
     public NavMeshSurface navMeshSurface;
 
-    public DungeonGraph Graph { get; private set; }
+    private Dictionary<Vector2Int, DungeonRoom> rooms =
+        new Dictionary<Vector2Int, DungeonRoom>();
 
-    private Dictionary<Vector3Int, RoomNode> tileToRoom = new Dictionary<Vector3Int, RoomNode>();
-
-    private void Start()
+    void Start()
     {
-        navMeshSurface.RemoveData();
         GenerateDungeon();
     }
 
-    public void GenerateDungeon()
+    void GenerateDungeon()
     {
-        ClearDungeon();
+        Vector2Int startPos = Vector2Int.zero;
 
-        int attempts = 0;
-        bool valid = false;
+        DungeonRoom startRoom = new DungeonRoom();
+        startRoom.gridPosition = startPos;
+        startRoom.roomType = RoomType.Start;
+        startRoom.distanceFromStart = 0;
 
-        while (!valid && attempts < maxGenerationAttempts)
+        rooms.Add(startPos, startRoom);
+
+        while (rooms.Count < targetRoomCount)
         {
-            attempts++;
+            List<DungeonRoom> existingRooms =
+                new List<DungeonRoom>(rooms.Values);
 
-            Graph = new DungeonGraph();
+            DungeonRoom randomRoom =
+                existingRooms[Random.Range(0, existingRooms.Count)];
 
-            if (useRandomSeed)
-                seed = Random.Range(int.MinValue, int.MaxValue);
+            Vector2Int dir = GetRandomDirection();
+            Vector2Int newPos = randomRoom.gridPosition + dir;
 
-            Random.InitState(seed);
+            if (!rooms.ContainsKey(newPos))
+            {
+                DungeonRoom newRoom = new DungeonRoom();
+                newRoom.gridPosition = newPos;
+                newRoom.roomType = RoomType.Normal;
+                newRoom.parent = randomRoom;
+                newRoom.distanceFromStart = randomRoom.distanceFromStart + 1;
 
-            GenerateGraph();
-            AssignRoomTypes();
-            GenerateSecretRooms();
-            LayoutRooms();
-            GenerateLoops();
-            ApplyLocks();
+                ConnectRooms(randomRoom, newRoom, dir);
 
-            valid = ValidateDungeon();
+                rooms.Add(newPos, newRoom);
+            }
         }
 
-        if (!valid)
-        {
-            Debug.LogError("Failed to generate a valid dungeon.");
-            return;
-        }
-
-        Debug.Log($"Dungeon Generated in {attempts} attempt(s). Seed: {seed}");
-
+        AssignSpecialRooms();
         SpawnRooms();
-        SpawnDoors();
-        BuildDungeonBoundaries();
+        navMeshSurface.RemoveData();
         navMeshSurface.BuildNavMesh();
-        FindFirstObjectByType<SpawnNodeManager>().Initialize();
-        InitializeVisibility();
-    }
-
-    void SpawnDoors()
-    {
-        foreach (var room in Graph.Rooms)
-        {
-            foreach (var connection in room.Connections)
-            {
-                // Prevent duplicates
-                if (room.Id > connection.Target.Id)
-                    continue;
-
-                SpawnDoorBetween(room, connection.Target, connection.IsLocked);
-            }
-        }
-    }
-
-    void ClearDungeon()
-    {
-        for (int i = transform.childCount - 1; i >= 0; i--)
-        {
-            Destroy(transform.GetChild(i).gameObject);
-        }
-
-        tileToRoom.Clear();
-    }
-
-    void SpawnDoorBetween(RoomNode a, RoomNode b, bool isLocked)
-    {
-        foreach (var tile in a.OccupiedTiles)
-        {
-            foreach (Cardinal dir in System.Enum.GetValues(typeof(Cardinal)))
-            {
-                Vector3Int neighborTile = tile + DirectionToGridOffset(dir);
-
-                if (tileToRoom.TryGetValue(neighborTile, out var neighbor))
-                {
-                    if (neighbor == b)
-                    {
-                        Vector3 pos = GetWallWorldPosition(tile, dir, doorHeightOffset);
-                        Quaternion rot = GetWallRotation(dir);
-
-                        GameObject doorGO = Instantiate(doorPrefab, pos, rot, transform);
-
-                        Door door = doorGO.GetComponentInChildren<Door>();
-                        door.Initialize(a, b, isLocked);
-
-                        a.Doors.Add(door);
-                        b.Doors.Add(door);
-
-                        return; // Only one door per connection
-                    }
-                }
-            }
-        }
-
-        Debug.LogWarning($"Could not find door position between {a.Id} and {b.Id}");
-    }
-
-    void GenerateGraph()
-    {
-        Graph = new DungeonGraph();
-
-        RoomNode start = new RoomNode
-        {
-            Id = 0,
-            Type = RoomType.Start,
-            Depth = 0
-        };
-
-        Graph.Rooms.Add(start);
-
-        Queue<RoomNode> frontier = new Queue<RoomNode>();
-        frontier.Enqueue(start);
-
-        while (Graph.Rooms.Count < maxRooms && frontier.Count > 0)
-        {
-            RoomNode current = frontier.Dequeue();
-
-            int branches = Random.Range(minBranches, maxBranches + 1);
-
-            for (int i = 0; i < branches; i++)
-            {
-                if (Graph.Rooms.Count >= maxRooms)
-                    break;
-
-                RoomNode newRoom = new RoomNode
-                {
-                    Id = Graph.Rooms.Count,
-                    Depth = current.Depth + 1,
-                    Type = RoomType.Undefined
-                };
-
-                current.Connections.Add(new RoomConnection
-                {
-                    Target = newRoom,
-                    ConnectionType = ConnectionType.Door
-                });
-
-                newRoom.Connections.Add(new RoomConnection
-                {
-                    Target = current,
-                    ConnectionType = ConnectionType.Door
-                });
-
-                Graph.Rooms.Add(newRoom);
-                frontier.Enqueue(newRoom);
-            }
-        }
-
-        // Assign Boss to deepest room
-        RoomNode deepest = Graph.Rooms
-            .OrderByDescending(r => r.Depth)
-            .First();
-
-        deepest.Type = RoomType.Boss;
-    }
-
-    bool ValidateDungeon()
-    {
-        RoomNode boss = Graph.Rooms.FirstOrDefault(r => r.Type == RoomType.Boss);
-        if (boss == null)
-            return false;
-
-        if (boss.Depth < minimumBossDepth)
-        {
-            Debug.Log("Boss too close. Regenerating...");
-            return false;
-        }
-
-        if (!IsBossReachable())
-        {
-            Debug.Log("Boss unreachable. Regenerating...");
-            return false;
-        }
-
-        return true;
-    }
-
-    void AssignRoomTypes()
-    {
-        int treasureCount = 0;
-        int maxTreasureRooms = Mathf.Max(1, maxRooms / 6);
-
-        RoomNode start = Graph.GetStartRoom();
-
-        RoomNode boss = Graph.Rooms
-            .OrderByDescending(r => r.Depth)
-            .First();
-
-        boss.Type = RoomType.Boss;
-
-        foreach (var room in Graph.Rooms)
-        {
-            if (room == start || room == boss)
-                continue;
-
-            if (room.Connections.Count == 1 &&
-                room.Type != RoomType.Boss &&
-                treasureCount < maxTreasureRooms)
-            {
-                room.Type = RoomType.Treasure;
-                treasureCount++;
-            }
-
-            int maxDepth = Graph.Rooms.Max(r => r.Depth);
-            float depth01 = room.Depth / (float)maxDepth;
-
-            if (room.Connections.Count == 1 && depth01 > 0.3f)
-            {
-                room.Type = RoomType.Treasure;
-            }
-            else if (depth01 > 0.6f)
-            {
-                room.Type = Random.value < 0.8f ? RoomType.Combat : RoomType.Shop;
-            }
-            else
-            {
-                room.Type = RoomType.Combat;
-            }
-        }
-    }
-
-    bool IsBossReachable()
-    {
-        RoomNode start = Graph.GetStartRoom();
-        RoomNode boss = Graph.Rooms
-            .FirstOrDefault(r => r.Type == RoomType.Boss);
-
-        HashSet<RoomNode> visited = new HashSet<RoomNode>();
-        Queue<RoomNode> queue = new Queue<RoomNode>();
-
-        queue.Enqueue(start);
-        visited.Add(start);
-
-        while (queue.Count > 0)
-        {
-            var current = queue.Dequeue();
-
-            if (current == boss)
-                return true;
-
-            foreach (var conn in current.Connections)
-            {
-                if (!visited.Contains(conn.Target))
-                {
-                    visited.Add(conn.Target);
-                    queue.Enqueue(conn.Target);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    void LayoutRooms()
-    {
-        if (Graph == null || Graph.Rooms.Count == 0)
-            return;
-
-        tileToRoom.Clear();
-
-        Queue<RoomNode> queue = new Queue<RoomNode>();
-        RoomNode start = Graph.GetStartRoom();
-        var startEntry = prefabDatabase.GetEntry(start.Type);
-        Vector2Int startSize = startEntry != null ? startEntry.gridSize : Vector2Int.one;
-
-        ReserveTiles(start, Vector3Int.zero, startSize, tileToRoom);
-        queue.Enqueue(start);
-
-        Vector3Int[] directions =
-        {
-            Vector3Int.right,
-            Vector3Int.left,
-            Vector3Int.forward,
-            Vector3Int.back
-        };
-
-        while (queue.Count > 0)
-        {
-            RoomNode current = queue.Dequeue();
-            var currentEntry = prefabDatabase.GetEntry(current.Type);
-            Vector2Int currentSize = currentEntry != null ? currentEntry.gridSize : Vector2Int.one;
-
-            foreach (var connection in current.Connections)
-            {
-                RoomNode neighbor = connection.Target;
-                if (neighbor.OccupiedTiles.Count > 0)
-                    continue; // Already placed
-
-                var neighborEntry = prefabDatabase.GetEntry(neighbor.Type);
-                Vector2Int neighborSize = neighborEntry != null ? neighborEntry.gridSize : Vector2Int.one;
-
-                bool placed = false;
-
-                // Shuffle directions for procedural randomness
-                directions = directions.OrderBy(_ => Random.value).ToArray();
-
-                foreach (var dir in directions)
-                {
-                    Vector3Int candidate = current.GridPosition;
-
-                    // Offset depends on direction and room sizes
-                    if (dir == Vector3Int.right)
-                        candidate += new Vector3Int(currentSize.x, 0, 0);
-                    else if (dir == Vector3Int.left)
-                        candidate += new Vector3Int(-neighborSize.x, 0, 0);
-                    else if (dir == Vector3Int.forward)
-                        candidate += new Vector3Int(0, 0, currentSize.y);
-                    else if (dir == Vector3Int.back)
-                        candidate += new Vector3Int(0, 0, -neighborSize.y);
-
-                    // Check if tiles are free
-                    if (CanPlaceRoom(candidate, neighborSize, tileToRoom))
-                    {
-                        ReserveTiles(neighbor, candidate, neighborSize, tileToRoom);
-                        queue.Enqueue(neighbor);
-                        placed = true;
-                        break;
-                    }
-                }
-
-                const int maxPlacementAttempts = 8;
-
-                if (!placed)
-                {
-                    neighbor.PlacementAttempts++;
-
-                    if (neighbor.PlacementAttempts < maxPlacementAttempts)
-                    {
-                        queue.Enqueue(neighbor);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Failed to place room {neighbor.Id} after {maxPlacementAttempts} attempts.");
-                    }
-                }
-            }
-        }
     }
 
     void SpawnRooms()
     {
-        foreach (var room in Graph.Rooms)
+        float roomWidthWorld  = roomTemplate.width  * roomTemplate.tileSize;
+        float roomLengthWorld = roomTemplate.length * roomTemplate.tileSize;
+
+        foreach (var room in rooms.Values)
         {
-            var entry = prefabDatabase.GetEntry(room.Type);
-            if (entry == null || entry.prefab == null)
-                continue;
+            Vector3 worldPos = new Vector3(
+                room.gridPosition.x * roomWidthWorld,
+                0,
+                room.gridPosition.y * roomLengthWorld
+            );
 
-            Vector3 worldPos = GetRoomWorldCenter(room);
+            GameObject prefabToUse = normalRoomPrefab;
 
-            GameObject roomGO = Instantiate(entry.prefab, worldPos, Quaternion.identity, transform);
-            room.RoomObject = roomGO;
-
-            var visual = roomGO.GetComponent<RoomVisualController>();
-            visual.RoomNode = room;
-
-            room.VisualController = visual;
-            var trigger = roomGO.GetComponentInChildren<RoomTrigger>();
-            trigger.RoomNode = room;
-            trigger.visibilityManager = FindFirstObjectByType<DungeonVisibilityManager>();
-
-            // Optional: store size on node for later door alignment
-            room.WorldSize = entry.gridSize * entry.worldSize;
-        }
-    }
-
-    Vector3 GetRoomWorldCenter(RoomNode room)
-    {
-        float offsetX = (room.GridSize.x - 1) * 0.5f;
-        float offsetZ = (room.GridSize.y - 1) * 0.5f;
-
-        return new Vector3(
-            (room.GridPosition.x + offsetX) * roomSize,
-            room.GridPosition.y * floorHeight,
-            (room.GridPosition.z + offsetZ) * roomSize
-        );
-    }
-
-    bool CanPlaceRoom(Vector3Int basePos, Vector2Int size, Dictionary<Vector3Int, RoomNode> occupied)
-    {
-        for (int x = 0; x < size.x; x++)
-            for (int z = 0; z < size.y; z++)
+            switch (room.roomType)
             {
-                Vector3Int tile = basePos + new Vector3Int(x, 0, z);
-                if (occupied.ContainsKey(tile))
-                    return false;
-            }
-        return true;
-    }
-
-    void ReserveTiles(RoomNode room, Vector3Int basePos, Vector2Int size, Dictionary<Vector3Int, RoomNode> occupied)
-    {
-        room.OccupiedTiles.Clear();
-        room.GridPosition = basePos;
-        room.GridSize = size;
-
-        for (int x = 0; x < size.x; x++)
-            for (int z = 0; z < size.y; z++)
-            {
-                Vector3Int tile = basePos + new Vector3Int(x, 0, z);
-                room.OccupiedTiles.Add(tile);
-                tileToRoom[tile] = room;
-            }
-    }
-
-    void BuildDungeonBoundaries()
-    {
-        foreach (var room in Graph.Rooms)
-        {
-            foreach (var tile in room.OccupiedTiles)
-            {
-                foreach (Cardinal dir in System.Enum.GetValues(typeof(Cardinal)))
-                {
-                    // Always instantiate a wall for this room
-                    Vector3 wallWorldPos = GetWallWorldPosition(tile, dir, wallHalfHeightOffset, true);
-                    Quaternion wallRot = GetWallRotation(dir);
-
-                    GameObject prefabToUse = wallSolidPrefab;
-
-                    // If this direction leads to a connected room, use door wall prefab
-                    Vector3Int neighborTile = tile + DirectionToGridOffset(dir);
-                    if (tileToRoom.TryGetValue(neighborTile, out var neighborRoom))
-                    {
-                        if (neighborRoom != room && AreRoomsConnected(room, neighborRoom))
-                        {
-                            prefabToUse = wallDoorPrefab;
-                        }
-                    }
-
-                    InstantiateWall(tile, prefabToUse, wallWorldPos, wallRot);
-                }
-            }
-        }
-    }
-
-    void InitializeVisibility()
-    {
-        foreach (var room in Graph.Rooms)
-        {
-            room.VisualController.AssignLightsAndRenderers();
-        }
-    }
-
-    private void InstantiateWall(Vector3Int tile, GameObject prefab, Vector3 pos, Quaternion rot)
-    {
-        RoomNode room = GetRoomAtTile(tile);
-        if (room == null || room.RoomObject == null)
-            return;
-
-        Transform parent = room.RoomObject.transform;
-
-        GameObject wallGO = Instantiate(prefab, pos, rot, parent);
-
-        // Apply room material to all children renderers
-        for (int i = 0; i < wallGO.transform.childCount; i++)
-        {
-            Renderer r = wallGO.transform.GetChild(i).GetComponent<Renderer>();
-            if (r != null)
-                r.material = prefabDatabase.GetEntry(room.Type).mat;
-        }
-    }
-
-    RoomNode GetRoomAtTile(Vector3Int tile)
-    {
-        return tileToRoom.TryGetValue(tile, out var room) ? room : null;
-    }
-
-    bool AreRoomsConnected(RoomNode a, RoomNode b)
-    {
-        return a.Connections.Any(c => c.Target == b);
-    }
-
-    Vector3 GetWallWorldPosition(Vector3Int tile, Cardinal dir, float verticalOffset, bool pushOutward = true)
-    {
-        Vector3 basePos = new Vector3(
-            tile.x * roomSize,
-            tile.y * floorHeight + verticalOffset,
-            tile.z * roomSize
-        );
-
-        Vector3 normal = dir switch
-        {
-            Cardinal.North => Vector3.forward,
-            Cardinal.South => Vector3.back,
-            Cardinal.East  => Vector3.right,
-            Cardinal.West  => Vector3.left,
-            _ => Vector3.zero
-        };
-
-        // pushOutward moves the wall away from the room along the normal
-        float offset = pushOutward ? wallThickness * 0.5f : 0f;
-
-        // main tile offset to position wall at tile edge
-        Vector3 tileOffset = dir switch
-        {
-            Cardinal.North => new Vector3(0, 0, roomSize * 0.5f),
-            Cardinal.South => new Vector3(0, 0, -roomSize * 0.5f),
-            Cardinal.East  => new Vector3(roomSize * 0.5f, 0, 0),
-            Cardinal.West  => new Vector3(-roomSize * 0.5f, 0, 0),
-            _ => Vector3.zero
-        };
-
-        return basePos + tileOffset + normal * offset;
-    }
-
-    Quaternion GetWallRotation(Cardinal dir)
-    {
-        switch (dir)
-        {
-            case Cardinal.North: return Quaternion.identity;
-            case Cardinal.South: return Quaternion.Euler(0, 180, 0);
-            case Cardinal.East:  return Quaternion.Euler(0, 90, 0);
-            case Cardinal.West:  return Quaternion.Euler(0, -90, 0);
-        }
-
-        return Quaternion.identity;
-    }
-
-    Vector3Int DirectionToGridOffset(Cardinal dir)
-    {
-        switch (dir)
-        {
-            case Cardinal.North: return Vector3Int.forward;
-            case Cardinal.South: return Vector3Int.back;
-            case Cardinal.East:  return Vector3Int.right;
-            case Cardinal.West:  return Vector3Int.left;
-        }
-        return Vector3Int.zero;
-    }
-
-    void GenerateLoops()
-    {
-        var roomLookup = new Dictionary<Vector3Int, RoomNode>();
-
-        foreach (var room in Graph.Rooms)
-        {
-            if (!roomLookup.ContainsKey(room.GridPosition))
-                roomLookup.Add(room.GridPosition, room);
-        }
-
-        Vector3Int[] directions =
-        {
-            Vector3Int.right,
-            Vector3Int.left,
-            Vector3Int.forward,
-            Vector3Int.back
-        };
-
-        foreach (var room in Graph.Rooms)
-        {
-            foreach (var tile in room.OccupiedTiles)
-            {
-                foreach (var dir in directions)
-                {
-                    Vector3Int neighborTile = tile + dir;
-
-                    if (!tileToRoom.TryGetValue(neighborTile, out var neighbor))
-                        continue;
-
-                    if (neighbor == room)
-                        continue;
-
-                    if (room.Connections.Any(c => c.Target == neighbor))
-                        continue;
-
-                    if (Random.value < loopChance &&
-                        room.Type != RoomType.Boss &&
-                        neighbor.Type != RoomType.Boss)
-                    {
-                        CreateConnection(room, neighbor);
-                    }
-                }
-            }
-        }
-    }
-
-    void CreateConnection(RoomNode a, RoomNode b)
-    {
-        a.Connections.Add(new RoomConnection { Target = b, ConnectionType = ConnectionType.Door });
-        b.Connections.Add(new RoomConnection { Target = a, ConnectionType = ConnectionType.Door });
-    }
-
-    void ApplyLocks()
-    {
-        foreach (var room in Graph.Rooms)
-        {
-            // Dead end?
-            if (room.Connections.Count != 1)
-                continue;
-
-            // Don't lock start or boss
-            if (room.Type == RoomType.Start || room.Type == RoomType.Boss)
-                continue;
-
-            if (Random.value < lockChance)
-            {
-                RoomConnection conn = room.Connections[0];
-
-                conn.IsLocked = true;
-
-                // Make sure reverse connection is also locked
-                RoomNode parent = conn.Target;
-                var reverse = parent.Connections
-                    .FirstOrDefault(c => c.Target == room);
-
-                if (reverse != null)
-                    reverse.IsLocked = true;
-
-                // Mark this room as bonus
-                room.Type = RoomType.Treasure;
-            }
-        }
-    }
-
-    void GenerateSecretRooms()
-    {
-        Vector3Int[] directions =
-        {
-            Vector3Int.right,
-            Vector3Int.left,
-            Vector3Int.forward,
-            Vector3Int.back
-        };
-
-        for (int i = 0; i < secretRoomCount; i++)
-        {
-            var candidates = Graph.Rooms
-                .Where(r => r.Type == RoomType.Combat)
-                .OrderBy(x => Random.value)
-                .ToList();
-
-            foreach (var room in candidates)
-            {
-                foreach (var dir in directions)
-                {
-                    Vector3Int secretPos = room.GridPosition + dir;
-
-                    if (tileToRoom.ContainsKey(secretPos))
-                        continue;
-
-                    // Create secret
-                    RoomNode secret = new RoomNode
-                    {
-                        Id = Graph.Rooms.Count,
-                        Type = RoomType.Secret,
-                        Depth = room.Depth,
-                    };
-
-                    room.Connections.Add(new RoomConnection
-                    {
-                        Target = secret,
-                        ConnectionType = ConnectionType.Door
-                    });
-
-                    secret.Connections.Add(new RoomConnection
-                    {
-                        Target = room,
-                        ConnectionType = ConnectionType.Door
-                    });
-
-                    Vector2Int secretSize = prefabDatabase.GetEntry(RoomType.Secret).gridSize;
-
-                    if (!CanPlaceRoom(secretPos, secretSize, tileToRoom))
-                        continue;
-
-                    ReserveTiles(secret, secretPos, secretSize, tileToRoom);
-                    Graph.Rooms.Add(secret);
+                case RoomType.Start:
+                    prefabToUse = startRoomPrefab;
                     break;
-                }
+                case RoomType.Normal:
+                    prefabToUse = normalRoomPrefab;
+                    break;
+                case RoomType.Boss:
+                    prefabToUse = bossRoomPrefab;
+                    break;
+                case RoomType.Treasure:
+                    prefabToUse = treasureRoomPrefab;
+                    break;
+                case RoomType.Shop:
+                    prefabToUse = shopRoomPrefab;
+                    break;
+                case RoomType.Secret:
+                    prefabToUse = secretRoomPrefab;
+                    break;
+            }
 
-                break;
+            GameObject roomObj = Instantiate(prefabToUse, worldPos, Quaternion.identity);
+            room.spawnedObject = roomObj;
+
+            RoomTrigger trigger = roomObj.AddComponent<RoomTrigger>();
+            trigger.roomData = room;
+            trigger.visibilityController = FindFirstObjectByType<DungeonVisibilityController>();
+
+            RoomGenerator generator = roomObj.GetComponent<RoomGenerator>();
+            generator.GenerateRoom(room);
+
+            BoxCollider col = roomObj.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+
+            var size = new Vector3(generator.width * generator.tileSize, generator.height * generator.tileSize, generator.length * generator.tileSize);
+            col.center = size / 2;
+            col.size = new Vector3(size.x - roomVisibilityTriggerPadding, size.y, size.z - roomVisibilityTriggerPadding);
+
+            roomObj.AddComponent<RoomVisualController>();
+        }
+    }
+
+    public IEnumerable<DungeonRoom> GetAllRooms()
+    {
+        return rooms.Values;
+    }
+
+    Vector2Int GetRandomDirection()
+    {
+        int r = Random.Range(0, 4);
+
+        switch (r)
+        {
+            case 0: return Vector2Int.up;
+            case 1: return Vector2Int.down;
+            case 2: return Vector2Int.left;
+            default: return Vector2Int.right;
+        }
+    }
+
+    void ConnectRooms(DungeonRoom a, DungeonRoom b, Vector2Int dir)
+    {
+        if (dir == Vector2Int.up)
+        {
+            a.north.exists = true;
+            b.south.exists = true;
+        }
+        else if (dir == Vector2Int.down)
+        {
+            a.south.exists = true;
+            b.north.exists = true;
+        }
+        else if (dir == Vector2Int.left)
+        {
+            a.west.exists = true;
+            b.east.exists = true;
+        }
+        else if (dir == Vector2Int.right)
+        {
+            a.east.exists = true;
+            b.west.exists = true;
+        }
+    }
+
+    void LockEntranceToRoom(DungeonRoom room)
+    {
+        foreach (var other in rooms.Values)
+        {
+            Vector2Int dir = room.gridPosition - other.gridPosition;
+
+            if (dir == Vector2Int.up && other.north.exists)
+            {
+                other.north.isLocked = true;
+                room.south.isLocked = true;
+            }
+            else if (dir == Vector2Int.down && other.south.exists)
+            {
+                other.south.isLocked = true;
+                room.north.isLocked = true;
+            }
+            else if (dir == Vector2Int.left && other.west.exists)
+            {
+                other.west.isLocked = true;
+                room.east.isLocked = true;
+            }
+            else if (dir == Vector2Int.right && other.east.exists)
+            {
+                other.east.isLocked = true;
+                room.west.isLocked = true;
             }
         }
     }
 
-    private void OnDrawGizmos()
+    void AssignSpecialRooms()
     {
-        if (Graph == null || Graph.Rooms == null)
-            return;
+        DungeonRoom bossRoom = null;
+        int maxDistance = 0;
 
-        foreach (var room in Graph.Rooms)
+        foreach (var room in rooms.Values)
         {
-            Vector3 pos = new Vector3(
-                room.GridPosition.x * roomSize,
-                room.GridPosition.y * floorHeight,
-                room.GridPosition.z * roomSize
-            );
-
-            Gizmos.color = GetRoomColor(room.Type);
-            Gizmos.DrawCube(pos, Vector3.one * 3f);
-
-        foreach (var conn in room.Connections)
-        {
-            Vector3 targetPos = new Vector3(
-                conn.Target.GridPosition.x * roomSize,
-                conn.Target.GridPosition.y * floorHeight,
-                conn.Target.GridPosition.z * roomSize
-            );
-
-            if (conn.IsLocked)
-                Gizmos.color = Color.blue;
-            else
-                Gizmos.color = Color.white;
-
-            Gizmos.DrawLine(pos, targetPos);
+            if (room.distanceFromStart > maxDistance)
+            {
+                maxDistance = room.distanceFromStart;
+                bossRoom = room;
+            }
         }
+
+        bossRoom.roomType = RoomType.Boss;
+        MarkMainPath(bossRoom);
+        LockEntranceToRoom(bossRoom);
+
+        int treasureCount = 0;
+        int shopCount = 0;
+        int secretCount = 0;
+
+        // Assign other special rooms
+        foreach (var room in rooms.Values)
+        {
+            if (room.roomType != RoomType.Normal || room.isMainPath)
+                continue;
+
+            int connections = room.ConnectionCount();
+
+            // Dead ends are prime candidates
+            if (connections == 1)
+            {
+                float roll = Random.value;
+
+                if (treasureCount < maxTreasureRooms && roll < treasureChance)
+                {
+                    room.roomType = RoomType.Treasure;
+                    treasureCount++;
+                    continue;
+                }
+
+                if (shopCount < maxShopRooms && roll < shopChance)
+                {
+                    room.roomType = RoomType.Shop;
+                    shopCount++;
+                    continue;
+                }
+            }
+
+            // Secret rooms prefer 3+ connections
+            if (connections >= 3 && secretCount < maxSecretRooms)
+            {
+                if (Random.value < secretChance)
+                {
+                    room.roomType = RoomType.Secret;
+                    secretCount++;
+                }
+            }
+        }
+
+        List<Vector2Int> secretSpots = FindSecretCandidates();
+
+        if (secretSpots.Count > 0)
+        {
+            Vector2Int chosen = secretSpots[Random.Range(0, secretSpots.Count)];
+
+            DungeonRoom secretRoom = new DungeonRoom();
+            secretRoom.gridPosition = chosen;
+            secretRoom.roomType = RoomType.Secret;
+
+            rooms.Add(chosen, secretRoom);
         }
     }
 
-    Color GetRoomColor(RoomType type)
+    void MarkMainPath(DungeonRoom bossRoom)
     {
-        switch (type)
+        DungeonRoom current = bossRoom;
+
+        while (current != null)
         {
-            case RoomType.Start: return Color.green;
-            case RoomType.Boss: return Color.red;
-            case RoomType.Treasure: return Color.yellow;
-            case RoomType.Shop: return Color.cyan;
-            case RoomType.Secret: return Color.magenta;
-            default: return Color.gray;
+            current.isMainPath = true;
+            current = current.parent;
+        }
+    }
+
+    List<Vector2Int> FindSecretCandidates()
+    {
+        List<Vector2Int> candidates = new List<Vector2Int>();
+
+        foreach (var room in rooms.Values)
+        {
+            Vector2Int[] dirs =
+            {
+                Vector2Int.up,
+                Vector2Int.down,
+                Vector2Int.left,
+                Vector2Int.right
+            };
+
+            foreach (var dir in dirs)
+            {
+                Vector2Int checkPos = room.gridPosition + dir;
+
+                if (rooms.ContainsKey(checkPos))
+                    continue;
+
+                int adjacentRooms = 0;
+
+                foreach (var dir2 in dirs)
+                {
+                    if (rooms.ContainsKey(checkPos + dir2))
+                        adjacentRooms++;
+                }
+
+                // Secret rooms prefer 2+ adjacent rooms
+                if (adjacentRooms >= 2)
+                {
+                    candidates.Add(checkPos);
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    void OnDrawGizmos()
+    {
+        if (rooms == null || roomTemplate == null)
+            return;
+
+        foreach (var room in rooms.Values)
+        {
+            float roomWidthWorld  = roomTemplate.width  * roomTemplate.tileSize;
+            float roomLengthWorld = roomTemplate.length * roomTemplate.tileSize;
+
+            Vector3 pos = new Vector3(
+                room.gridPosition.x * roomWidthWorld + roomWidthWorld * 0.5f,
+                0,
+                room.gridPosition.y * roomLengthWorld + roomLengthWorld * 0.5f
+            );
+
+            // Draw node
+            Gizmos.color = GetRoomColor(room);
+            Gizmos.DrawSphere(pos, roomWidthWorld * 0.08f);
+
+            // Draw connections
+            DrawConnection(room, pos, Vector3.forward * roomLengthWorld, room.north);
+            DrawConnection(room, pos, Vector3.back    * roomLengthWorld, room.south);
+            DrawConnection(room, pos, Vector3.right   * roomWidthWorld,  room.east);
+            DrawConnection(room, pos, Vector3.left    * roomWidthWorld,  room.west);
+        }
+    }
+
+    void DrawConnection(DungeonRoom room, Vector3 pos, Vector3 offset, RoomConnection connection)
+    {
+        if (!connection.exists)
+            return;
+
+        Gizmos.color = connection.isLocked ? Color.red : Color.green;
+        Gizmos.DrawLine(pos, pos + offset);
+    }
+
+    Color GetRoomColor(DungeonRoom room)
+    {
+        switch (room.roomType)
+        {
+            case RoomType.Start:
+                return Color.pink;
+
+            case RoomType.Boss:
+                return Color.red;
+
+            case RoomType.Treasure:
+                return Color.yellow;
+
+            case RoomType.Shop:
+                return Color.green;
+
+            case RoomType.Secret:
+                return Color.cyan;
+
+            default:
+                return room.isMainPath ? Color.white : Color.orange;
         }
     }
 }

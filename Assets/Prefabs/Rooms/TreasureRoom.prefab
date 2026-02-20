@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3512645313603498155
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1053208738503064268}
+  - component: {fileID: 3988267445057372660}
+  m_Layer: 0
+  m_Name: TreasureRoom
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1053208738503064268
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3512645313603498155}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3988267445057372660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3512645313603498155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 572c72436bf0a0240a7fb1e829930a81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomGenerator
+  width: 20
+  length: 20
+  height: 5
+  tileSize: 4
+  doorHeight: 3
+  doorWidth: 3
+  floorPrefab: {fileID: 5395501987589175346, guid: 9828fb3d95bf37b4ab9d7ebc28d6cf86, type: 3}
+  wallPrefab: {fileID: 5395501987589175346, guid: 9828fb3d95bf37b4ab9d7ebc28d6cf86, type: 3}
+  doorPrefab: {fileID: 5395501987589175346, guid: 9828fb3d95bf37b4ab9d7ebc28d6cf86, type: 3}
+  floorMat: {fileID: 2100000, guid: 2ee04ace06a848e4582d69e5909b478c, type: 2}
+  wallMat: {fileID: 2100000, guid: e72587bff4421b142925287d5bca264a, type: 2}
