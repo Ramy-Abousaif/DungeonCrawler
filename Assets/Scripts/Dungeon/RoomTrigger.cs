@@ -7,9 +7,18 @@ public class RoomTrigger : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player"))
+            return;
+
+        visibilityController.EnterRoom(roomData);
+        if (!roomData.IsCleared)
         {
-            visibilityController.EnterRoom(roomData);
+            var combat = roomData.spawnedObject.GetComponent<RoomCombatController>();
+            if (combat != null)
+            {
+                combat.Initialize(roomData);
+                combat.StartCombat();
+            }
         }
     }
 }

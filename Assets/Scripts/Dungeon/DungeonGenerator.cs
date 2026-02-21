@@ -76,6 +76,7 @@ public class DungeonGenerator : MonoBehaviour
         SpawnRooms();
         navMeshSurface.RemoveData();
         navMeshSurface.BuildNavMesh();
+        FindFirstObjectByType<SpawnNodeManager>().Initialize();
     }
 
     void SpawnRooms()
@@ -159,22 +160,30 @@ public class DungeonGenerator : MonoBehaviour
         if (dir == Vector2Int.up)
         {
             a.north.exists = true;
+            a.north.neighbor = b;
             b.south.exists = true;
+            b.south.neighbor = a;
         }
         else if (dir == Vector2Int.down)
         {
             a.south.exists = true;
+            a.south.neighbor = b;
             b.north.exists = true;
+            b.north.neighbor = a;
         }
         else if (dir == Vector2Int.left)
         {
             a.west.exists = true;
+            a.west.neighbor = b;
             b.east.exists = true;
+            b.east.neighbor = a;
         }
         else if (dir == Vector2Int.right)
         {
             a.east.exists = true;
+            a.east.neighbor = b;
             b.west.exists = true;
+            b.west.neighbor = a;
         }
     }
 

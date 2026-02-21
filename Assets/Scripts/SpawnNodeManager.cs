@@ -55,40 +55,40 @@ public class SpawnNodeManager : MonoBehaviour
         }
     }
 
-    // public SpawnNode GetValidNodeInRoom(SpawnCard card, RoomNode room)
-    // {
-    //     List<SpawnNode> validNodes = new List<SpawnNode>();
+    public SpawnNode GetValidNodeInRoom(SpawnCard card, DungeonRoom room)
+    {
+        List<SpawnNode> validNodes = new List<SpawnNode>();
 
-    //     foreach (var node in nodes)
-    //     {
-    //         if (!IsNodeInsideRoom(node.position, room))
-    //             continue;
+        foreach (var node in nodes)
+        {
+            if (!IsNodeInsideRoom(node.position, room))
+                continue;
 
-    //         float radius = GetHullRadius(card.hullSize);
+            float radius = GetHullRadius(card.hullSize);
 
-    //         if (Physics.CheckSphere(node.position, radius, obstacleLayer))
-    //             continue;
+            if (Physics.CheckSphere(node.position, radius, obstacleLayer))
+                continue;
 
-    //         validNodes.Add(node);
-    //     }
+            validNodes.Add(node);
+        }
 
-    //     if (validNodes.Count == 0)
-    //         return null;
+        if (validNodes.Count == 0)
+            return null;
 
-    //     return validNodes[Random.Range(0, validNodes.Count)];
-    // }
+        return validNodes[Random.Range(0, validNodes.Count)];
+    }
 
-    // private bool IsNodeInsideRoom(Vector3 position, RoomNode room)
-    // {
-    //     Vector3 center = room.RoomObject.transform.position;
+    private bool IsNodeInsideRoom(Vector3 position, DungeonRoom room)
+    {
+        var roomGen = FindFirstObjectByType<DungeonGenerator>().roomTemplate;
+        Vector3 center = room.spawnedObject.transform.position;
 
-    //     Debug.Log(room.WorldSize);
-    //     float halfX = room.WorldSize.x * 0.5f;
-    //     float halfZ = room.WorldSize.y * 0.5f;
+        float halfX = roomGen.width * roomGen.tileSize * 0.5f;
+        float halfZ = roomGen.length * roomGen.tileSize * 0.5f;
 
-    //     return Mathf.Abs(position.x - center.x) <= halfX &&
-    //         Mathf.Abs(position.z - center.z) <= halfZ;
-    // }
+        return Mathf.Abs(position.x - center.x) <= halfX &&
+            Mathf.Abs(position.z - center.z) <= halfZ;
+    }
 
     public SpawnNode GetValidNode(SpawnCard card)
     {

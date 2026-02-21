@@ -12,6 +12,7 @@ public class RoomGenerator : MonoBehaviour
     [Header("Door Settings")]
     public int doorHeight = 1;
     public int doorWidth = 2;
+    public Vector3 doorSize = Vector3.one;
 
     public GameObject floorPrefab;
     public GameObject wallPrefab;
@@ -92,6 +93,7 @@ public class RoomGenerator : MonoBehaviour
         CombineWalls(southWalls, "SouthWall");
         CombineWalls(eastWalls, "EastWall");
         CombineWalls(westWalls, "WestWall");
+        SpawnDoors(roomData);
     }
 
     GameObject SpawnWall(int x, int z, int h, bool isRotated)
@@ -116,6 +118,59 @@ public class RoomGenerator : MonoBehaviour
         );
 
         return wall;
+    }
+
+    void SpawnDoors(DungeonRoom roomData)
+    {
+        if (doorPrefab == null)
+            return;
+
+        float roomWidthWorld = width * tileSize;
+        float roomLengthWorld = length * tileSize;
+
+        // NORTH (only if neighbor is above)
+        if (roomData.north.exists &&
+            roomData.north.neighbor.gridPosition.y > roomData.gridPosition.y)
+        {
+            Vector3 pos = new Vector3(
+                (roomWidthWorld * 0.5f) + (tileSize / 2),
+                0,
+                roomLengthWorld
+            );
+
+            CreateDoor(roomData, roomData.north.neighbor, pos, Quaternion.identity);
+        }
+
+        // EAST (only if neighbor is right)
+        if (roomData.east.exists &&
+            roomData.east.neighbor.gridPosition.x > roomData.gridPosition.x)
+        {
+            Vector3 pos = new Vector3(
+                roomWidthWorld,
+                0,
+                (roomLengthWorld * 0.5f) + (tileSize / 2)
+            );
+
+            CreateDoor(roomData, roomData.east.neighbor, pos, Quaternion.Euler(0, 90, 0));
+        }
+    }
+
+    void CreateDoor(DungeonRoom a, DungeonRoom b, Vector3 localPosition, Quaternion rotation)
+    {
+        GameObject doorObj = Instantiate(doorPrefab, transform);
+        doorObj.transform.localRotation = rotation;
+        doorObj.transform.localPosition = localPosition;
+        doorObj.transform.localScale = doorSize;
+
+        Door door = doorObj.GetComponentInChildren<Door>();
+
+        if (door != null)
+        {
+            // temp apply locks dependant on connection
+            door.Initialize(a, b, false);
+            a.Doors.Add(door);
+            b.Doors.Add(door);
+        }
     }
 
     void CombineWalls(List<GameObject> wallPieces, string wallName)

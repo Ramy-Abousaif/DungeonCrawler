@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -5,6 +6,7 @@ public class RoomConnection
 {
     public bool exists;
     public bool isLocked;
+    public DungeonRoom neighbor;
 }
 
 public class DungeonRoom
@@ -22,6 +24,9 @@ public class DungeonRoom
     public int distanceFromStart;
     public bool isMainPath;
     
+    public List<Door> Doors = new List<Door>();
+    public bool IsCleared;
+
     public bool visited;
     public GameObject spawnedObject;
 

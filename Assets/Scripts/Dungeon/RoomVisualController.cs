@@ -37,7 +37,6 @@ public class RoomVisualController : MonoBehaviour
     {
         renderers = GetComponentsInChildren<Renderer>(true);
         lights = GetComponentsInChildren<Light>(true);
-        Debug.Log(renderers.Length);
 
         // Cache light intensities
         foreach (var l in lights)
