@@ -29,9 +29,9 @@ public class RoomGenerator : MonoBehaviour
             {
                 GameObject tile = Instantiate(floorPrefab, transform);
                 tile.transform.localPosition = new Vector3(
-                    x * tileSize,
+                    (x * tileSize) + (tileSize / 2),
                     0,
-                    z * tileSize
+                    z * tileSize + (tileSize / 2)
                 );
 
                 tile.layer = LayerMask.NameToLayer("Ground");
