@@ -165,7 +165,7 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 1
     m_Colors:
-    - _AmbientLight: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 0.5}
+    - _AmbientLight: {r: 0.735849, g: 0.735849, b: 0.735849, a: 0.62}
     - _BaseColor: {r: 0.030668259, g: 1, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DeepGrassColor: {r: 0.16221808, g: 0.4433962, b: 0, a: 1}

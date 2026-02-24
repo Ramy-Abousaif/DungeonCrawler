@@ -48,7 +48,7 @@ MonoBehaviour:
   length: 20
   height: 5
   tileSize: 4
-  doorHeight: 2
+  doorHeight: 3
   doorWidth: 3
   doorSize: {x: 2, y: 2, z: 3}
   floorPrefab: {fileID: 5395501987589175346, guid: 9828fb3d95bf37b4ab9d7ebc28d6cf86, type: 3}

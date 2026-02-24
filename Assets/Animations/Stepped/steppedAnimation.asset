@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 188b5154c9b4d8642b03d2a24e17bda1, type: 3}
+  m_Name: steppedAnimation
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.Tools.SteppedAnimation
+  SourceClips:
+  - {fileID: 7400000, guid: 0c9c1b5af45660b4b847909d66f7abe8, type: 2}
+  - {fileID: 7400000, guid: 1b45ecd8fefd2e0499ac495d04299860, type: 2}
+  - {fileID: 7400000, guid: 83afbb8aad3cbcc41b5ff19112b69806, type: 2}
+  - {fileID: 7400000, guid: 21070f594f2bbeb469b029eb0d81504f, type: 2}
+  KeyframeMode: 0
+  KeyframeRate: 6
+  ManualKeyframeTimes: []
+  FixedTimeDelay: 0.1

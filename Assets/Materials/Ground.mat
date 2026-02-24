@@ -129,7 +129,7 @@ Material:
     - _FlashAmount: 0
     - _FormAmount: 0
     - _FresnelAmount: 2
-    - _Gamma: 1
+    - _Gamma: 2
     - _GlitchStrength: 0.5
     - _GlossMapScale: 0
     - _Glossiness: 0
@@ -164,8 +164,8 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _AmbientLight: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 0.5}
-    - _BaseColor: {r: 0.509434, g: 0.509434, b: 0.509434, a: 1}
+    - _AmbientLight: {r: 0.735849, g: 0.735849, b: 0.735849, a: 0.62}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DeepGrassColor: {r: 0.16221808, g: 0.4433962, b: 0, a: 1}
     - _DissolveColor: {r: 3.580254, g: 0, b: 8, a: 1}

@@ -120,6 +120,7 @@ public class DungeonGenerator : MonoBehaviour
             room.spawnedObject = roomObj;
 
             RoomTrigger trigger = roomObj.AddComponent<RoomTrigger>();
+            roomObj.layer = LayerMask.NameToLayer("WorldBounds");
             trigger.roomData = room;
             trigger.visibilityController = FindFirstObjectByType<DungeonVisibilityController>();
 
