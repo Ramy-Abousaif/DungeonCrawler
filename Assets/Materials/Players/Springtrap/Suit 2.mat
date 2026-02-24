@@ -126,7 +126,7 @@ Material:
     - _DissolveScale: 40
     - _DissolveSlider: 0
     - _DissolveWidth: 0.02
-    - _Dissolveable: 1
+    - _Dissolveable: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EMISSION: 0
