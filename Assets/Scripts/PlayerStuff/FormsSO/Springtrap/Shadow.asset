@@ -58,7 +58,7 @@ MonoBehaviour:
     clip: {fileID: 0}
     isPlaying: 0
     playTimer: 0
-  - stateName: Third Attack Transformed
+  - stateName: Third Attack Transformed_stepped
     icon: {fileID: 21300000, guid: 9ed3e537dfcd17145a1a8b7bfdecacad, type: 3}
     layerIndex: 1
     useAnimationEvent: 0

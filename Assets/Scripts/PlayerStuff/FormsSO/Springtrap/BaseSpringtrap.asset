@@ -16,7 +16,7 @@ MonoBehaviour:
   damageMultiplier: 1
   canFly: 0
   abilities:
-  - stateName: Main Attack
+  - stateName: Main Attack_stepped
     icon: {fileID: 21300000, guid: b88cc71220ca98e4da564adfd48118e2, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
@@ -37,7 +37,7 @@ MonoBehaviour:
     clip: {fileID: 7400000, guid: 0c9c1b5af45660b4b847909d66f7abe8, type: 2}
     isPlaying: 0
     playTimer: 0
-  - stateName: Secondary Attack
+  - stateName: Secondary Attack_stepped
     icon: {fileID: 21300000, guid: e4c4a9218a5142c479eee67b06193073, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
@@ -58,7 +58,7 @@ MonoBehaviour:
     clip: {fileID: 7400000, guid: 1b45ecd8fefd2e0499ac495d04299860, type: 2}
     isPlaying: 0
     playTimer: 0
-  - stateName: Third Attack
+  - stateName: Third Attack_stepped
     icon: {fileID: 21300000, guid: 1bc66be82db33cd41b3d836423cbca9f, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
