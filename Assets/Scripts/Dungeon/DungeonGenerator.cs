@@ -119,15 +119,17 @@ public class DungeonGenerator : MonoBehaviour
             GameObject roomObj = Instantiate(prefabToUse, worldPos, Quaternion.identity);
             room.spawnedObject = roomObj;
 
-            RoomTrigger trigger = roomObj.AddComponent<RoomTrigger>();
-            roomObj.layer = LayerMask.NameToLayer("WorldBounds");
+            GameObject triggerChild = new GameObject("RoomTrigger");
+            triggerChild.transform.parent = roomObj.transform;
+            RoomTrigger trigger = triggerChild.AddComponent<RoomTrigger>();
+            triggerChild.layer = LayerMask.NameToLayer("RoomTrigger");
             trigger.roomData = room;
             trigger.visibilityController = FindFirstObjectByType<DungeonVisibilityController>();
 
             RoomGenerator generator = roomObj.GetComponent<RoomGenerator>();
             generator.GenerateRoom(room);
 
-            BoxCollider col = roomObj.AddComponent<BoxCollider>();
+            BoxCollider col = triggerChild.AddComponent<BoxCollider>();
             col.isTrigger = true;
 
             var size = new Vector3(generator.width * generator.tileSize, generator.height * generator.tileSize, generator.length * generator.tileSize);
