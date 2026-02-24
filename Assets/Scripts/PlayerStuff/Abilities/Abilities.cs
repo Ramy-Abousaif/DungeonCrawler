@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public enum AbilityType
 {
@@ -79,11 +80,26 @@ public class Abilities : MonoBehaviour
     [Header("Forms")]
     [SerializeField] private CharacterForm baseForm;
     [SerializeField] private CharacterForm altForm;
-    [SerializeField] private Material[] mats;
+    [SerializeField] private GameObject renderers;
+    private List<Material> mats = new List<Material>();
 
     [SerializeField] private CharacterForm _currentForm;
     private float _currentFormAmount;
     private Coroutine _formRoutine;
+
+    void Awake()
+    {
+        for(int i = 0; i < renderers.transform.childCount; i++)
+        {
+            if (renderers.transform.GetChild(i).TryGetComponent(out Renderer r))
+            {
+                foreach(var m in r.materials)
+                {
+                    mats.Add(m);
+                }
+            }       
+        }
+    }
 
     private void Start()
     {

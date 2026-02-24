@@ -73,7 +73,7 @@ public class RoomGenerator : MonoBehaviour
             }
         }
 
-        for (int z = 0; z < length; z++)
+        for (int z = 1; z < length - 1; z++)
         {
             for (int h = 0; h < height; h++)
             {
@@ -94,6 +94,86 @@ public class RoomGenerator : MonoBehaviour
         CombineWalls(eastWalls, "EastWall");
         CombineWalls(westWalls, "WestWall");
         SpawnDoors(roomData);
+        SetupRoomLighting(roomData);
+    }
+
+    void SetupRoomLighting(DungeonRoom roomData)
+    {
+        GameObject lightingRoot = new GameObject("RoomLighting");
+        lightingRoot.transform.SetParent(transform);
+        lightingRoot.transform.localPosition = Vector3.zero;
+
+        float roomWidthWorld  = width  * tileSize;
+        float roomLengthWorld = length * tileSize;
+        float roomHeightWorld = height * tileSize;
+
+        Vector3 roomCenter = new Vector3(
+            roomWidthWorld / 2f,
+            roomHeightWorld * 0.8f,
+            roomLengthWorld / 2f
+        );
+
+        // MAIN LIGHT (soft overhead bounce)
+        Light mainLight = CreateLight(
+            "MainLight",
+            lightingRoot.transform,
+            roomCenter,
+            new Color(1f, 0.92f, 0.8f),
+            500f,
+            Mathf.Max(roomWidthWorld, roomLengthWorld) * 0.9f,
+            true
+        );
+
+        // CORNER FILL LIGHTS
+        float offsetX = roomWidthWorld * 0.35f;
+        float offsetZ = roomLengthWorld * 0.35f;
+
+        Vector3[] corners =
+        {
+            roomCenter + new Vector3(-offsetX, 0, -offsetZ),
+            roomCenter + new Vector3(offsetX, 0, -offsetZ),
+            roomCenter + new Vector3(-offsetX, 0, offsetZ),
+            roomCenter + new Vector3(offsetX, 0, offsetZ),
+        };
+
+        foreach (var corner in corners)
+        {
+            CreateLight(
+                "CornerLight",
+                lightingRoot.transform,
+                corner,
+                new Color(1f, 0.85f, 0.7f),
+                100f,
+                Mathf.Max(roomWidthWorld, roomLengthWorld) * 0.7f,
+                false
+            );
+        }
+    }
+
+    Light CreateLight(
+    string name,
+    Transform parent,
+    Vector3 localPos,
+    Color color,
+    float intensity,
+    float range,
+    bool castShadows)
+    {
+        GameObject lightObj = new GameObject(name);
+        lightObj.transform.SetParent(parent);
+        lightObj.transform.localPosition = localPos;
+
+        Light light = lightObj.AddComponent<Light>();
+        light.type = LightType.Spot;
+        light.spotAngle = 110f;
+        light.innerSpotAngle = 90f;
+        light.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        light.color = color;
+        light.intensity = intensity;
+        light.range = range;
+        light.shadows = castShadows ? LightShadows.Soft : LightShadows.None;
+
+        return light;
     }
 
     GameObject SpawnWall(int x, int z, int h, bool isRotated)

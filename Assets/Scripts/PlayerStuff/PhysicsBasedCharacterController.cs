@@ -440,6 +440,7 @@ public class PhysicsBasedCharacterController : Character
                     _originalLayers[go] = go.layer;
 
                 go.layer = selectedLayer;
+                go.transform.GetComponent<Renderer>().material.SetFloat("_Selected", 1);
                 _selectedObjects.Add(go);
             }
         }
@@ -464,13 +465,17 @@ public class PhysicsBasedCharacterController : Character
             if (_originalLayers.TryGetValue(go, out int origLayer))
             {
                 go.layer = origLayer;
+                go.transform.GetComponent<Renderer>().material.SetFloat("_Selected", 0);
                 _originalLayers.Remove(go);
             }
             else
             {
                 int interactLayer = LayerMask.NameToLayer("Interactable");
                 if (interactLayer != -1)
-                    go.layer = interactLayer; // best-effort fallback
+                {
+                    go.transform.GetComponent<Renderer>().material.SetFloat("_Selected", 0);
+                    go.layer = interactLayer; // best-effort fallback   
+                }
             }
             _selectedObjects.Remove(go);
         }
