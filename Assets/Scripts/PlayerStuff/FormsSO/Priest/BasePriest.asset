@@ -17,7 +17,7 @@ MonoBehaviour:
   canFly: 0
   abilities:
   - stateName: Main Attack
-    icon: {fileID: 21300000, guid: bdbf58656a8871a4e85d139cf63eb6f8, type: 3}
+    icon: {fileID: 21300000, guid: 00651b406f121a14497c39c26a67cd2e, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
     abilityType: 0
@@ -38,7 +38,7 @@ MonoBehaviour:
     isPlaying: 0
     playTimer: 0
   - stateName: Secondary Attack
-    icon: {fileID: 21300000, guid: 3c24ba6817929524abf970a3ee5fb85b, type: 3}
+    icon: {fileID: 21300000, guid: 0da6f6e5a3e2c6e4c86f4ccde4b9d706, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
     abilityType: 6
@@ -59,7 +59,7 @@ MonoBehaviour:
     isPlaying: 0
     playTimer: 0
   - stateName: Third Attack
-    icon: {fileID: 21300000, guid: 1fdd1727cc8901f4a8dd1d5991823944, type: 3}
+    icon: {fileID: 21300000, guid: c3f09f33c0804d242a50ef7bd98bbea6, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
     abilityType: 7
@@ -80,7 +80,7 @@ MonoBehaviour:
     isPlaying: 0
     playTimer: 0
   - stateName: 
-    icon: {fileID: 21300000, guid: e24e204661960ac4a877884eddd080f5, type: 3}
+    icon: {fileID: 21300000, guid: 7bd9e17f13a5e894bbd25914ef9f8764, type: 3}
     layerIndex: 1
     useAnimationEvent: 0
     abilityType: 1

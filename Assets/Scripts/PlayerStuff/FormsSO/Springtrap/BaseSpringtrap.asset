@@ -17,7 +17,7 @@ MonoBehaviour:
   canFly: 0
   abilities:
   - stateName: Main Attack_stepped
-    icon: {fileID: 21300000, guid: b88cc71220ca98e4da564adfd48118e2, type: 3}
+    icon: {fileID: 21300000, guid: 8c46d8560691d5046a87e9ca94557c67, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
     abilityType: 2
@@ -34,11 +34,11 @@ MonoBehaviour:
     stunnable: 0
     stunDuration: 0
     cooldownTimer: 0
-    clip: {fileID: 7400000, guid: 0c9c1b5af45660b4b847909d66f7abe8, type: 2}
+    clip: {fileID: 7400000, guid: da9a22ce5fa64464b8c190ddab645e9a, type: 2}
     isPlaying: 0
     playTimer: 0
   - stateName: Secondary Attack_stepped
-    icon: {fileID: 21300000, guid: e4c4a9218a5142c479eee67b06193073, type: 3}
+    icon: {fileID: 21300000, guid: b0b0e93f49e8f9e47a024fed8d54637e, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
     abilityType: 0
@@ -54,12 +54,12 @@ MonoBehaviour:
     affectedByAttackSpeed: 0
     stunnable: 1
     stunDuration: 2
-    cooldownTimer: 0
-    clip: {fileID: 7400000, guid: 1b45ecd8fefd2e0499ac495d04299860, type: 2}
+    cooldownTimer: 2.9728675
+    clip: {fileID: 7400000, guid: edc6234be90ae7b4d9798481109d4e5e, type: 2}
     isPlaying: 0
     playTimer: 0
   - stateName: Third Attack_stepped
-    icon: {fileID: 21300000, guid: 1bc66be82db33cd41b3d836423cbca9f, type: 3}
+    icon: {fileID: 21300000, guid: f6dcf27c7263e39438c24132720cb992, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
     abilityType: 2
@@ -76,11 +76,11 @@ MonoBehaviour:
     stunnable: 0
     stunDuration: 0
     cooldownTimer: 0
-    clip: {fileID: 7400000, guid: 83afbb8aad3cbcc41b5ff19112b69806, type: 2}
+    clip: {fileID: 7400000, guid: 44eecae078dc6854da757c68782660ef, type: 2}
     isPlaying: 0
     playTimer: 0
   - stateName: 
-    icon: {fileID: 21300000, guid: 09b40c919ed98dc4388d665183a8d132, type: 3}
+    icon: {fileID: 21300000, guid: 795624789a430054aa7686b21ade7a69, type: 3}
     layerIndex: 1
     useAnimationEvent: 0
     abilityType: 1
@@ -96,7 +96,7 @@ MonoBehaviour:
     affectedByAttackSpeed: 0
     stunnable: 0
     stunDuration: 0
-    cooldownTimer: 40
+    cooldownTimer: 0
     clip: {fileID: 0}
     isPlaying: 0
     playTimer: 0

@@ -17,7 +17,7 @@ MonoBehaviour:
   canFly: 0
   abilities:
   - stateName: Main Attack
-    icon: {fileID: 21300000, guid: 7790db612fa89e547a967b01ecae08a3, type: 3}
+    icon: {fileID: 21300000, guid: 5be4b33cba11a514fadd9315b66d9394, type: 3}
     layerIndex: 1
     useAnimationEvent: 1
     abilityType: 0
@@ -38,7 +38,7 @@ MonoBehaviour:
     isPlaying: 0
     playTimer: 0
   - stateName: 
-    icon: {fileID: 21300000, guid: 729ef766480ae8a44a1f0bf56297a0b3, type: 3}
+    icon: {fileID: 21300000, guid: 0a316ac2c1911ef4da27fdf6083173cc, type: 3}
     layerIndex: 1
     useAnimationEvent: 0
     abilityType: 0
@@ -59,7 +59,7 @@ MonoBehaviour:
     isPlaying: 0
     playTimer: 0
   - stateName: Third Attack Transformed
-    icon: {fileID: 21300000, guid: 01f159dfb9793324f80e8566b79cbbe9, type: 3}
+    icon: {fileID: 21300000, guid: fc2e34bbddbe5914ab276743402723fe, type: 3}
     layerIndex: 1
     useAnimationEvent: 0
     abilityType: 2
@@ -80,7 +80,7 @@ MonoBehaviour:
     isPlaying: 0
     playTimer: 0
   - stateName: 
-    icon: {fileID: 21300000, guid: 0d4087f4c37b37645a4a1dca2eee74e7, type: 3}
+    icon: {fileID: 21300000, guid: d032d24fda5629a45b9750ed64d1c07a, type: 3}
     layerIndex: 1
     useAnimationEvent: 0
     abilityType: 2

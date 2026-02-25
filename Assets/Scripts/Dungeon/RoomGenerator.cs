@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -172,6 +173,7 @@ public class RoomGenerator : MonoBehaviour
         light.intensity = intensity;
         light.range = range;
         light.shadows = castShadows ? LightShadows.Soft : LightShadows.None;
+        lightObj.AddComponent<VolumetricAdditionalLight>();
 
         return light;
     }

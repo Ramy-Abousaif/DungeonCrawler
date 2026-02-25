@@ -4924,6 +4924,7 @@ GameObject:
   - component: {fileID: 9126851964134337178}
   - component: {fileID: 2223127185718746510}
   - component: {fileID: 5088011828618223527}
+  - component: {fileID: -4535517092078171844}
   m_Layer: 9
   m_Name: Explosion
   m_TagString: Effects
@@ -9843,3 +9844,24 @@ MonoBehaviour:
     initialSize: 10
     expandable: 1
   lifetime: 5
+--- !u!114 &-4535517092078171844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3961190825525016369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 30
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1

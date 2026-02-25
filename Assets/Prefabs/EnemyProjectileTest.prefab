@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7579154314079962699}
   - component: {fileID: 7437101891359725886}
   - component: {fileID: 8711619957427389818}
+  - component: {fileID: 1709787250652424386}
   m_Layer: 14
   m_Name: EnemyProjectileTest
   m_TagString: Untagged
@@ -55,7 +56,7 @@ MonoBehaviour:
   damage: 10
   hitMask:
     serializedVersion: 2
-    m_Bits: 434241
+    m_Bits: 958529
   directDamage: 1
   stickable: 0
   rotXOffset: 0
@@ -170,3 +171,24 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8516997288011604190}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1709787250652424386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8516997288011604190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 15
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1

@@ -536,6 +536,7 @@ GameObject:
   - component: {fileID: 1110017720045634270}
   - component: {fileID: 3098801485844455325}
   - component: {fileID: -8810637388598066606}
+  - component: {fileID: 4445789445200410835}
   m_Layer: 8
   m_Name: Axe Projectile
   m_TagString: Untagged
@@ -643,6 +644,27 @@ MonoBehaviour:
   - {fileID: 5320838790718459893}
   - {fileID: 4166763409854642183}
   - {fileID: 5945791301485534082}
+--- !u!114 &4445789445200410835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5685342519408403706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 30
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1
 --- !u!1 &8801293097872268572
 GameObject:
   m_ObjectHideFlags: 0
