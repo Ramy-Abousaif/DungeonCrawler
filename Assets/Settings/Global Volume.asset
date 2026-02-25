@@ -18,10 +18,10 @@ MonoBehaviour:
     m_Value: 331
   baseHeight:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1.14
   maximumHeight:
     m_OverrideState: 1
-    m_Value: 11.2
+    m_Value: 12.64
   enableGround:
     m_OverrideState: 1
     m_Value: 0

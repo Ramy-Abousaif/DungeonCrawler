@@ -119,10 +119,10 @@ Material:
     - _EmissiveVertexColorWeight: 0
     - _EnvironmentReflections: 1
     - _FlashAmount: 0
-    - _FormAmount: 0.941
-    - _FresnelAmount: 2
-    - _Gamma: 1
-    - _GlitchStrength: 0
+    - _FormAmount: 0.97
+    - _FresnelAmount: 0.69
+    - _Gamma: 13
+    - _GlitchStrength: 0.01
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
@@ -160,8 +160,8 @@ Material:
     - _EdgeHighlightColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5058824}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FlashColor: {r: 4, g: 4, b: 4, a: 1}
-    - _InnerFresnel: {r: 0.14350377, g: 0, b: 0.1981132, a: 1}
-    - _OuterFresnel: {r: 0.5979567, g: 0, b: 1, a: 1}
+    - _InnerFresnel: {r: 0, g: 0, b: 0, a: 1}
+    - _OuterFresnel: {r: 3.1560345, g: 0, b: 5.278032, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 0.5019608}
     - _PixelGridOrigin: {r: 0, g: 0, b: 0, a: 0}
     - _SelectedOutlineColor: {r: 1, g: 1, b: 1, a: 0.5019608}

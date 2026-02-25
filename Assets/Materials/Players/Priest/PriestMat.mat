@@ -121,7 +121,7 @@ Material:
     - _FlashAmount: 0
     - _FormAmount: 0
     - _FresnelAmount: 6.68
-    - _Gamma: 1
+    - _Gamma: 9
     - _GlitchStrength: 0.07
     - _GlossMapScale: 0
     - _Glossiness: 0
@@ -134,7 +134,7 @@ Material:
     - _OcclusionStrength: 1
     - _PARALLAXMAP: 0
     - _Parallax: 0.005
-    - _PixelSize: 4
+    - _PixelSize: 3
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
@@ -151,7 +151,7 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _AmbientLight: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 0.5}
+    - _AmbientLight: {r: 0.4056557, g: 0.4056557, b: 0.4056557, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DissolveColor: {r: 3.580254, g: 0, b: 8, a: 1}

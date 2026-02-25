@@ -23,26 +23,36 @@ public class RoomGenerator : MonoBehaviour
 
     public void GenerateRoom(DungeonRoom roomData)
     {
-        // FLOOR
+        GenerateFloor();
+        GenerateWalls(roomData);
+        SetupRoomLighting(roomData);
+    }
+
+    void GenerateFloor()
+    {
+        List<GameObject> floorBlocks = new List<GameObject>();
+
         for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < length; z++)
             {
-                GameObject tile = Instantiate(floorPrefab, transform);
-                tile.transform.localPosition = new Vector3(
-                    (x * tileSize) + (tileSize / 2),
-                    0,
-                    z * tileSize + (tileSize / 2)
+                GameObject temp = new GameObject("FloorBlock");
+                temp.transform.SetParent(transform);
+                temp.transform.localPosition = new Vector3(
+                    x * tileSize,
+                    -1,
+                    z * tileSize
                 );
 
-                tile.layer = LayerMask.NameToLayer("Ground");
-                tile.GetComponent<MeshRenderer>().material = floorMat;
-                tile.name = "Floor";
-                tile.transform.localScale = new Vector3(floorPrefab.transform.localScale.x * tileSize, floorPrefab.transform.localScale.y, floorPrefab.transform.localScale.z * tileSize);
+                floorBlocks.Add(temp);
             }
         }
 
-        // WALLS
+        CombineMesh(floorBlocks, "Floor", floorMat, LayerMask.NameToLayer("Ground"));
+    }
+
+    void GenerateWalls(DungeonRoom roomData)
+    {
         int midX = width / 2;
         int midZ = length / 2;
 
@@ -90,12 +100,11 @@ public class RoomGenerator : MonoBehaviour
             }
         }
 
-        CombineWalls(northWalls, "NorthWall");
-        CombineWalls(southWalls, "SouthWall");
-        CombineWalls(eastWalls, "EastWall");
-        CombineWalls(westWalls, "WestWall");
+        CombineMesh(northWalls, "NorthWall", wallMat, LayerMask.NameToLayer("Wall"), true);
+        CombineMesh(southWalls, "SouthWall", wallMat, LayerMask.NameToLayer("Wall"), true);
+        CombineMesh(eastWalls, "EastWall", wallMat, LayerMask.NameToLayer("Wall"), true);
+        CombineMesh(westWalls, "WestWall", wallMat, LayerMask.NameToLayer("Wall"), true);
         SpawnDoors(roomData);
-        SetupRoomLighting(roomData);
     }
 
     void SetupRoomLighting(DungeonRoom roomData)
@@ -255,14 +264,14 @@ public class RoomGenerator : MonoBehaviour
         }
     }
 
-    void CombineWalls(List<GameObject> wallPieces, string wallName)
+    void CombineMesh(List<GameObject> pieces, string name, Material mat, LayerMask layer, bool isCarveable = false)
     {
-        if (wallPieces.Count == 0) return;
+        if (pieces.Count == 0) return;
 
         HashSet<Vector3Int> occupied = new HashSet<Vector3Int>();
 
         // Convert cube positions into grid coordinates
-        foreach (var piece in wallPieces)
+        foreach (var piece in pieces)
         {
             Vector3 localPos = piece.transform.localPosition;
             Vector3Int gridPos = new Vector3Int(
@@ -276,12 +285,13 @@ public class RoomGenerator : MonoBehaviour
 
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
+        List<Vector2> uvs = new List<Vector2>();
 
         int vCount = 0;
 
         foreach (var pos in occupied)
         {
-            vCount = AddVisibleFaces(pos, occupied, vertices, triangles, vCount);
+            vCount = AddVisibleFaces(pos, occupied, vertices, triangles, uvs, vCount);
         }
 
         Mesh combinedMesh = new Mesh();
@@ -289,25 +299,28 @@ public class RoomGenerator : MonoBehaviour
         combinedMesh.SetTriangles(triangles, 0);
         combinedMesh.RecalculateNormals();
         combinedMesh.RecalculateBounds();
+        combinedMesh.SetUVs(0, uvs);
 
-        GameObject combinedObj = new GameObject(wallName);
+        GameObject combinedObj = new GameObject(name);
         combinedObj.transform.SetParent(transform);
         combinedObj.transform.localPosition = Vector3.zero;
-        combinedObj.layer = LayerMask.NameToLayer("Wall");
+        combinedObj.layer = layer;
         combinedObj.isStatic = true;
-        CarveNavMesh(combinedObj);
+
+        if (isCarveable)
+            CarveNavMesh(combinedObj);
 
         MeshFilter mf = combinedObj.AddComponent<MeshFilter>();
         mf.mesh = combinedMesh;
 
         MeshRenderer mr = combinedObj.AddComponent<MeshRenderer>();
-        mr.material = wallMat;
+        mr.material = mat;
 
         MeshCollider collider = combinedObj.AddComponent<MeshCollider>();
         collider.sharedMesh = combinedMesh;
         collider.convex = false;
 
-        foreach (var piece in wallPieces)
+        foreach (var piece in pieces)
             Destroy(piece);
     }
 
@@ -342,6 +355,7 @@ public class RoomGenerator : MonoBehaviour
     HashSet<Vector3Int> occupied,
     List<Vector3> vertices,
     List<int> triangles,
+    List<Vector2> uvs,
     int vCount)
     {
         Vector3 basePos = new Vector3(pos.x, pos.y, pos.z) * tileSize;
@@ -398,6 +412,26 @@ public class RoomGenerator : MonoBehaviour
                     triangles.Add(vCount + 0);
                     triangles.Add(vCount + 3);
                     triangles.Add(vCount + 2);
+                }
+
+                if (i == 2) // +Y face (floor top)
+                {
+                    // World-aligned UVs
+                    uvs.Add(new Vector2(pos.x, pos.z));
+                    uvs.Add(new Vector2(pos.x + 1, pos.z));
+                    uvs.Add(new Vector2(pos.x + 1, pos.z + 1));
+                    uvs.Add(new Vector2(pos.x, pos.z + 1));
+                }
+                else
+                {
+                    // Default per-face tiling for walls
+                    uvs.AddRange(new Vector2[]
+                    {
+                        new Vector2(0, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 1),
+                        new Vector2(0, 1)
+                    });
                 }
 
                 vCount += 4;
