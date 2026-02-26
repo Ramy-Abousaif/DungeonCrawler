@@ -123,7 +123,7 @@ Material:
     - _FlashAmount: 0
     - _FormAmount: 0
     - _FresnelAmount: 6.68
-    - _Gamma: 5
+    - _Gamma: 9
     - _GlitchStrength: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.5

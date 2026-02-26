@@ -109,7 +109,7 @@ Material:
     - PROPIXELIZER_DITHERING: 1
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 1
-    - _AlphaClipThreshold: 0
+    - _AlphaClipThreshold: 0.01
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
@@ -170,7 +170,7 @@ Material:
     - _ZWriteControl: 0
     m_Colors:
     - _AmbientLight: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColor: {r: 0.5411765, g: 0.5411765, b: 0.5411765, a: 0.5}
+    - _BaseColor: {r: 0.5411765, g: 0.5411765, b: 0.5411765, a: 0.23529412}
     - _Color: {r: 0.010000009, g: 0.010000009, b: 0.010000009, a: 0.5}
     - _DissolveColor: {r: 3.580254, g: 0, b: 8, a: 1}
     - _EdgeHighlightColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5058824}

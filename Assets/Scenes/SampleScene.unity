@@ -21551,7 +21551,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEmitter
   supportedType: 0
   firePoint: {fileID: 81005861}
-  abilityEffect: {fileID: 8226681193282385452, guid: d270fcf561df55549b07ec103703846a, type: 3}
+  abilityEffect: {fileID: 6573989958493967180, guid: 79e0bf2aba04f07439795ed7cb2e583a, type: 3}
   optionalHeldItem: {fileID: 0}
   abilityIndex: 1
   enemyMask:
@@ -39426,7 +39426,7 @@ MonoBehaviour:
   - prefab: {fileID: 7261022963547120728, guid: fbc70f98fa1af54458ba354c76d5815b, type: 3}
     initialSize: 20
     expandable: 1
-  - prefab: {fileID: 8226681193282385452, guid: d270fcf561df55549b07ec103703846a, type: 3}
+  - prefab: {fileID: 6573989958493967180, guid: 79e0bf2aba04f07439795ed7cb2e583a, type: 3}
     initialSize: 5
     expandable: 1
   - prefab: {fileID: 3580904510845507538, guid: 6fe61ea2c79832f4288bbd632b4da35e, type: 3}
