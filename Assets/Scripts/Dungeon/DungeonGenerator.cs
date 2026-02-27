@@ -125,6 +125,7 @@ public class DungeonGenerator : MonoBehaviour
             triggerChild.layer = LayerMask.NameToLayer("RoomTrigger");
             trigger.roomData = room;
             trigger.visibilityController = FindFirstObjectByType<DungeonVisibilityController>();
+            trigger.transform.position = roomObj.transform.position;
 
             RoomGenerator generator = roomObj.GetComponent<RoomGenerator>();
             generator.GenerateRoom(room);
