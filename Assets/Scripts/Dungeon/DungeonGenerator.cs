@@ -458,14 +458,18 @@ public class DungeonGenerator : MonoBehaviour
                 secretRoom.height = cfg.height;
             }
 
-            // connect secret room to one of its adjacent existing rooms
+            // connect secret room to every adjacent existing room
+            // this ensures each shared wall becomes a "secret wall" when
+            // either side is a secret room (handled in RoomGenerator)
             foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
             {
                 Vector2Int neighborPos = chosen + dir;
                 if (rooms.TryGetValue(neighborPos, out DungeonRoom neighbour))
                 {
-                    ConnectRooms(neighbour, secretRoom, dir * -1); // dir from neighbour to secret
-                    break;
+                    // dir points from the secret position to the neighbour, but
+                    // ConnectRooms expects a -> b direction so we reverse it.
+                    ConnectRooms(neighbour, secretRoom, dir * -1);
+                    // continue looping to attach to any other neighbours as well
                 }
             }
 
