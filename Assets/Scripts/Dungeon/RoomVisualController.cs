@@ -13,14 +13,16 @@ public enum RoomVisualState
 public class RoomVisualController : MonoBehaviour
 {
     public DungeonRoom roomData;
-    
-    private Renderer[] renderers;
+
+    // List to hold WallSegment references
+    private WallSegment[] wallSegments;
+
     private Light[] lights;
 
     private Dictionary<Light, float> originalIntensities = new();
-    private Dictionary<Renderer, Color> originalBaseColors = new();
+    private Dictionary<WallSegment, float> originalWallAlphas = new();
 
-    private Dictionary<Renderer, MaterialPropertyBlock> propertyBlocks = new();
+    private Dictionary<WallSegment, MaterialPropertyBlock> wallPropertyBlocks = new();
 
     [Header("Multipliers")]
     public float activeMultiplier = 1f;
@@ -33,41 +35,50 @@ public class RoomVisualController : MonoBehaviour
 
     private static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
 
-    public void AssignLightsAndRenderers()
+    public void AssignWallSegmentsAndLights()
     {
-        renderers = GetComponentsInChildren<Renderer>(true);
+        // Find all WallSegment components in the children of this room
+        wallSegments = GetComponentsInChildren<WallSegment>(true);
         lights = GetComponentsInChildren<Light>(true);
+
+        // Cache the original alpha and color for each wall segment
+        foreach (var segment in wallSegments)
+        {
+            // Get the material from the first renderer in the segment
+            Renderer renderer = segment.GetComponentInChildren<Renderer>();
+
+            // Create a MaterialPropertyBlock to hold the properties
+            var block = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(block);
+
+            // Check and cache the original color (RGB) and alpha separately
+            Color originalColor = renderer.material.GetColor(BaseColorID);
+            originalWallAlphas[segment] = originalColor.a; // Store original alpha
+
+            // also make sure the property block is populated with that base color
+            // so future GetPropertyBlock() calls will return the correct value
+            block.SetColor(BaseColorID, originalColor);
+            renderer.SetPropertyBlock(block);
+
+            // Store the material property block to modify later
+            wallPropertyBlocks[segment] = block;
+        }
 
         // Cache light intensities
         foreach (var l in lights)
         {
             originalIntensities[l] = l.intensity;
         }
-
-        // Cache base colors
-        foreach (var r in renderers)
-        {
-            var block = new MaterialPropertyBlock();
-            r.GetPropertyBlock(block);
-
-            Color baseColor = Color.white;
-
-            if (r.sharedMaterial.HasProperty(BaseColorID))
-            {
-                baseColor = r.sharedMaterial.GetColor(BaseColorID);
-            }
-
-            originalBaseColors[r] = baseColor;
-            propertyBlocks[r] = block;
-        }
     }
 
+    // Call this to update the state of the entire room (walls, lighting)
     public void SetState(RoomVisualState state)
     {
-        if (renderers == null || renderers.Length == 0)
+        if (wallSegments == null || wallSegments.Length == 0)
         {
-            AssignLightsAndRenderers();
+            AssignWallSegmentsAndLights(); // Make sure we assign wall segments
         }
+
         float multiplier = state switch
         {
             RoomVisualState.Active => activeMultiplier,
@@ -83,33 +94,31 @@ public class RoomVisualController : MonoBehaviour
         transitionRoutine = StartCoroutine(LerpVisuals(multiplier));
     }
 
+    // Update the visibility (alpha) of walls and lights smoothly
     IEnumerator LerpVisuals(float multiplier)
     {
         if (this == null) yield break;
         if (!gameObject.activeInHierarchy) yield break;
+
         float time = 0f;
 
+        // Cache initial light intensities and wall segment alphas
         Dictionary<Light, float> startLightValues = new();
-        Dictionary<Renderer, Color> startColorValues = new();
+        Dictionary<WallSegment, float> startAlphaValues = new();
 
         foreach (var l in lights)
         {
             if (l == null) continue;
-            startLightValues[l] = l.intensity;            
+            startLightValues[l] = l.intensity;
         }
 
-        foreach (var r in renderers)
+        foreach (var segment in wallSegments)
         {
-            if (r == null) continue;
-            var block = propertyBlocks[r];
-            r.GetPropertyBlock(block);
-
-            if (block.HasColor(BaseColorID))
-                startColorValues[r] = block.GetColor(BaseColorID);
-            else
-                startColorValues[r] = originalBaseColors[r];
+            if (segment == null) continue;
+            startAlphaValues[segment] = originalWallAlphas[segment]; // Store initial alpha for each wall segment
         }
 
+        // Smoothly interpolate the state change
         while (time < transitionDuration)
         {
             time += Time.deltaTime;
@@ -118,45 +127,58 @@ public class RoomVisualController : MonoBehaviour
             // Lerp lights
             foreach (var l in lights)
             {
+                if (l == null) continue;
                 float target = originalIntensities[l] * multiplier;
                 l.intensity = Mathf.Lerp(startLightValues[l], target, t);
-            }
-
-            // Lerp materials
-            foreach (var r in renderers)
-            {
-                Color original = originalBaseColors[r];
-                Color target = original * multiplier;
-
-                Color lerped = Color.Lerp(startColorValues[r], target, t);
-
-                var block = propertyBlocks[r];
-                block.SetColor(BaseColorID, lerped);
-                r.SetPropertyBlock(block);
             }
 
             yield return null;
         }
     }
 
-    public Color GetRendererColor(Renderer r)
+    // Apply alpha value to the entire wall segment (all meshes in that segment)
+    public void SetWallSegmentVisibility(WallSegment segment, float alpha)
     {
-        if (!propertyBlocks.TryGetValue(r, out var block))
-            block = new MaterialPropertyBlock();
+        MaterialPropertyBlock block = wallPropertyBlocks[segment];
+        
+        // Get the material of the renderer and ensure it supports transparency
+        Renderer renderer = segment.GetComponentInChildren<Renderer>();
+        
+        // Get the current color (RGB) from the material
+        Color currentColor = renderer.material.GetColor(BaseColorID);
 
-        r.GetPropertyBlock(block);
-        return block.GetColor(BaseColorID);
+        // Only modify the alpha channel, keep RGB the same
+        Color newColor = new Color(currentColor.r, currentColor.g, currentColor.b, alpha);
+
+        // Apply the new color with updated alpha to the material property block
+        block.SetColor(BaseColorID, newColor);  // Ensure we're using the correct color property
+
+        // Apply the property block to all renderers in the wall segment
+        Renderer[] renderers = segment.GetComponentsInChildren<Renderer>();
+        foreach (var rend in renderers)
+        {
+            rend.SetPropertyBlock(block);
+        }
+
+        // Update the original alpha for the next transition
+        originalWallAlphas[segment] = alpha;
     }
 
-    public void FadeRenderer(Renderer r, float alpha)
+    // Method to get current color of a wall segment's renderer
+    public Color GetWallSegmentColor(WallSegment segment)
     {
-        if (!propertyBlocks.TryGetValue(r, out var block))
-            block = new MaterialPropertyBlock();
-
-        r.GetPropertyBlock(block);
-        Color c = block.GetColor(BaseColorID);
-        c.a = alpha;
-        block.SetColor(BaseColorID, c);
-        r.SetPropertyBlock(block);
+        MaterialPropertyBlock block = wallPropertyBlocks[segment];
+        Renderer renderer = segment.GetComponentInChildren<Renderer>();
+        renderer.GetPropertyBlock(block);
+        Color color = block.GetColor(BaseColorID);
+        // if the block didn't actually have a base color yet, fall back to the material's color
+        if (Mathf.Approximately(color.a, 0f))
+        {
+            color = renderer.material.GetColor(BaseColorID);
+            // also populate the block so subsequent calls return correctly
+            block.SetColor(BaseColorID, color);
+            renderer.SetPropertyBlock(block);
+        }
+        return color;
     }
 }

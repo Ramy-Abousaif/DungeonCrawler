@@ -11,8 +11,8 @@ public class OcclusionFader : MonoBehaviour
     public LayerMask obstacleMask;
 
     // Internal tracking
-    private Dictionary<Renderer, float> _fadeTargets = new();
-    private Dictionary<Renderer, RoomVisualController> _rendererToController = new();
+    private Dictionary<WallSegment, float> _fadeTargets = new();
+    private Dictionary<WallSegment, RoomVisualController> _segmentToController = new();
 
     void Update()
     {
@@ -26,55 +26,59 @@ public class OcclusionFader : MonoBehaviour
         Ray ray = new Ray(transform.position, dir.normalized);
         RaycastHit[] hits = Physics.SphereCastAll(ray, thickness, dist, obstacleMask);
 
-        HashSet<Renderer> currentlyBlocking = new();
+        HashSet<WallSegment> currentlyBlocking = new();
 
+        // Step 2: Detect all the wall segments that are being blocked
         foreach (var hit in hits)
         {
-            Renderer r = hit.collider.GetComponentInChildren<Renderer>();
-            if (r == null) continue;
-
-            currentlyBlocking.Add(r);
-
-            // Get the RoomVisualController from this renderer
-            if (!_rendererToController.ContainsKey(r))
+            WallSegment wallSegment = hit.collider.GetComponentInParent<WallSegment>();
+            if (wallSegment != null)
             {
-                RoomVisualController controller = r.GetComponentInParent<RoomVisualController>();
-                if (controller != null)
-                    _rendererToController[r] = controller;
-            }
+                currentlyBlocking.Add(wallSegment);
 
-            // Only set fade target if we have a controller
-            if (_rendererToController.TryGetValue(r, out var roomController))
-            {
-                _fadeTargets[r] = transparentAlpha;
+                // Ensure that we store the RoomVisualController for the wall segment
+                if (!_segmentToController.ContainsKey(wallSegment))
+                {
+                    RoomVisualController controller = wallSegment.GetComponentInParent<RoomVisualController>();
+                    if (controller != null)
+                    {
+                        _segmentToController[wallSegment] = controller;
+                    }
+                }
+
+                // Set the fade target for the wall segment
+                if (_segmentToController.TryGetValue(wallSegment, out var roomController))
+                {
+                    _fadeTargets[wallSegment] = transparentAlpha;
+                }
             }
         }
 
-        // Step 2: Restore non-blocking walls to full alpha
-        foreach (var kvp in _rendererToController)
+        // Step 3: Restore non-blocking wall segments to full visibility (alpha = 1)
+        foreach (var segment in _segmentToController.Keys)
         {
-            Renderer r = kvp.Key;
-            if (!currentlyBlocking.Contains(r))
+            if (!currentlyBlocking.Contains(segment))
             {
-                _fadeTargets[r] = 1f;
+                _fadeTargets[segment] = 1f;
             }
         }
 
-        // Step 3: Smoothly fade all tracked renderers
+        // Step 4: Smoothly fade all tracked wall segments (from current alpha to target)
         foreach (var kvp in _fadeTargets)
         {
-            Renderer r = kvp.Key;
+            WallSegment segment = kvp.Key;
             float targetAlpha = kvp.Value;
 
-            if (_rendererToController.TryGetValue(r, out var controller))
-            {
-                // Smoothly interpolate alpha
-                Color currentColor = controller.GetRendererColor(r); // We'll add this method in RoomVisualController
-                float newAlpha = Mathf.MoveTowards(currentColor.a, targetAlpha, fadeSpeed * Time.deltaTime);
+            // Get the current alpha of the wall segment from the RoomVisualController
+            RoomVisualController controller = _segmentToController[segment];
+            Color currentColor = controller.GetWallSegmentColor(segment);
+            float currentAlpha = currentColor.a;
 
-                // Apply the new alpha via property block
-                controller.FadeRenderer(r, newAlpha);
-            }
+            // Smoothly interpolate the alpha value
+            float newAlpha = Mathf.MoveTowards(currentAlpha, targetAlpha, fadeSpeed * Time.deltaTime);
+
+            // Apply the new alpha value to the wall segment using the RoomVisualController
+            controller.SetWallSegmentVisibility(segment, newAlpha);
         }
     }
 }

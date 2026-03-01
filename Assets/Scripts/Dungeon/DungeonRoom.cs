@@ -13,6 +13,17 @@ public class DungeonRoom
 {
     public Vector2Int gridPosition;
 
+    // which configuration this room uses
+    public RoomConfig config;
+
+    // size and layout data assigned when the room is created (copied from config)
+    public int width;
+    public int length;
+    public int height;
+
+    // calculated when dungeon is laid out
+    public Vector3 worldPosition;
+
     public RoomConnection north = new RoomConnection();
     public RoomConnection south = new RoomConnection();
     public RoomConnection east  = new RoomConnection();

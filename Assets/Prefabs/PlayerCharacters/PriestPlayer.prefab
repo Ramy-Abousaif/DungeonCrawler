@@ -855,8 +855,7 @@ MonoBehaviour:
   layerWeightSmoothTime: 0.08
   baseForm: {fileID: 11400000, guid: 3e20b1f46e6b4bb4ab8d97804fcdebdc, type: 2}
   altForm: {fileID: 11400000, guid: 4c86d4713a0dcd04183e2502946cebb8, type: 2}
-  mats:
-  - {fileID: 2100000, guid: 87351bcfb28e9e5498c02c791acea3c0, type: 2}
+  renderers: {fileID: 29922989430026330}
   _currentForm: {fileID: 11400000, guid: 3e20b1f46e6b4bb4ab8d97804fcdebdc, type: 2}
 --- !u!114 &1546033420247208417
 MonoBehaviour:
@@ -2366,7 +2365,7 @@ MonoBehaviour:
   abilityIndex: 0
   enemyMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   radiusBaseMultiplier: 2
 --- !u!1 &3077449886011852940
 GameObject:

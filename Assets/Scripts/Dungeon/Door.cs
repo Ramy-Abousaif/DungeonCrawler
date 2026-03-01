@@ -10,6 +10,13 @@ public class Door : Interactable
     private bool connectionLocked;
     private bool combatLocked;
 
+    [SerializeField] private Material normalMat;
+    [SerializeField] private Material bossMat;
+    [SerializeField] private Material treasureMat;
+    [SerializeField] private Material shopMat;
+    [SerializeField] private Material secretMat;
+    [SerializeField] private Material startMat;
+
     void Awake()
     {
         anim = GetComponentInParent<Animator>();
@@ -23,7 +30,66 @@ public class Door : Interactable
         connectionLocked = locked;
         combatLocked = false;
 
+        ApplyDoorVisual();
+    
         UpdateLockState();
+    }
+
+    void ApplyDoorVisual()
+    {
+        DungeonRoom higherPriorityRoom =
+            GetRoomPriority(RoomA.roomType) >= GetRoomPriority(RoomB.roomType)
+            ? RoomA
+            : RoomB;
+
+        foreach(Renderer r in transform.parent.GetComponentsInChildren<Renderer>())
+        {
+            SetDoorMaterialForRoomType(higherPriorityRoom.roomType, r);   
+        }
+    }
+
+    void SetDoorMaterialForRoomType(RoomType type, Renderer renderer)
+    {
+        switch (type)
+        {
+            case RoomType.Boss:
+                renderer.material = bossMat;
+                break;
+
+            case RoomType.Treasure:
+                renderer.material = treasureMat;
+                break;
+
+            case RoomType.Shop:
+                renderer.material = shopMat;
+                break;
+
+            case RoomType.Secret:
+                renderer.material = secretMat;
+                break;
+
+            case RoomType.Start:
+                renderer.material = startMat;
+                break;
+
+            default:
+                renderer.material = normalMat;
+                break;
+        }
+    }
+
+    int GetRoomPriority(RoomType type)
+    {
+        switch (type)
+        {
+            case RoomType.Boss:     return 100;
+            case RoomType.Treasure: return 80;
+            case RoomType.Shop:     return 60;
+            case RoomType.Secret:   return 50;
+            case RoomType.Normal:   return 40;
+            case RoomType.Start:    return 10;
+            default:                return 0;
+        }
     }
 
     public void SetCombatLocked(bool locked)

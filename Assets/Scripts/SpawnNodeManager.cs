@@ -80,11 +80,10 @@ public class SpawnNodeManager : MonoBehaviour
 
     private bool IsNodeInsideRoom(Vector3 position, DungeonRoom room)
     {
-        var roomGen = FindFirstObjectByType<DungeonGenerator>().roomTemplate;
         Vector3 center = room.spawnedObject.transform.position;
 
-        float halfX = roomGen.width * roomGen.tileSize * 0.5f;
-        float halfZ = roomGen.length * roomGen.tileSize * 0.5f;
+        float halfX = room.width * FindFirstObjectByType<DungeonGenerator>().tileSize * 0.5f;
+        float halfZ = room.length * FindFirstObjectByType<DungeonGenerator>().tileSize * 0.5f;
 
         return Mathf.Abs(position.x - center.x) <= halfX &&
             Mathf.Abs(position.z - center.z) <= halfZ;

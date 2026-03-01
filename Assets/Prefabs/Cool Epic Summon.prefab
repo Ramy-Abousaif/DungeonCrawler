@@ -499,6 +499,7 @@ GameObject:
   - component: {fileID: -4940182986056479926}
   - component: {fileID: 1150160964175737373}
   - component: {fileID: 2809380688708806804}
+  - component: {fileID: 411469245376112670}
   m_Layer: 15
   m_Name: Cool Epic Summon
   m_TagString: Untagged
@@ -663,6 +664,27 @@ MonoBehaviour:
   priority: 50
   maxAttractRange: 0
   isLure: 0
+--- !u!114 &411469245376112670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5720607538058651576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 15
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1
 --- !u!1 &6343518690290683474
 GameObject:
   m_ObjectHideFlags: 0

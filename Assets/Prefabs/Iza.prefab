@@ -771,6 +771,7 @@ GameObject:
   - component: {fileID: 8906312425181353585}
   - component: {fileID: 7182783096886609269}
   - component: {fileID: 1993534650100604585}
+  - component: {fileID: 1992116631237442164}
   m_Layer: 7
   m_Name: Point Light
   m_TagString: Untagged
@@ -887,6 +888,21 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!114 &1992116631237442164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4204674720531530839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
+  anisotropy: 0.25
+  scattering: 1
+  radius: 0.2
 --- !u!1 &4269916089783402676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1406,6 +1422,7 @@ GameObject:
   - component: {fileID: 4806253594855984111}
   - component: {fileID: 2780507243564260280}
   - component: {fileID: 8004393358841374183}
+  - component: {fileID: 6237199290600182971}
   m_Layer: 7
   m_Name: Iza
   m_TagString: Enemy
@@ -1580,6 +1597,27 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -5495902117074765545, guid: 7b1e83509b75db04b9c46c1facb41fdd, type: 3}
+--- !u!114 &6237199290600182971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6713366170485265699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 15
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1
 --- !u!1 &7213139211725733565
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7821626356479357916}
   - component: {fileID: -6511790429004411303}
   - component: {fileID: -7676596031338938029}
+  - component: {fileID: -749375053233192436}
   m_Layer: 8
   m_Name: Plush
   m_TagString: Untagged
@@ -173,7 +174,6 @@ MonoBehaviour:
   dissolveDelay: 1
   dissolveDuration: 0.4
   vfx: []
-  armDelay: 0.25
   lifeTime: 8
   mineRadius: 25
   explosionDamage: 25
@@ -203,3 +203,24 @@ MonoBehaviour:
   priority: 200
   maxAttractRange: 0
   isLure: 1
+--- !u!114 &-749375053233192436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4262637840000889668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 15
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1

@@ -24,15 +24,14 @@ Material:
   m_Shader: {fileID: -6465566751694194690, guid: 20df923cd4f23d44fafcb7bfd429690e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - _ALPHATEST_ON
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 2450
-  stringTagMap:
-    RenderType: TransparentCutout
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   - SHADOWCASTER
@@ -40,6 +39,14 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _LightingRamp:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PaletteLUT:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -54,6 +61,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - COLOR_GRADING: 0
+    - PROPIXELIZER_DITHERING: 0
     - _AlphaClip: 1
     - _AlphaToMask: 1
     - _Blend: 0
@@ -63,8 +72,11 @@ Material:
     - _DissolveSlider2: 0.55
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _ID: 1
+    - _PixelSize: 5
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _ReceiveShadows: 1
     - _SmoothStep: 0
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
@@ -73,7 +85,9 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
+    - _AmbientLight: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 0.5}
     - _DarkColor: {r: 0.16037738, g: 0.16037738, b: 0.16037738, a: 1}
     - _FireColor: {r: 7.317081, g: 0, b: 13.76636, a: 1}
+    - _PixelGridOrigin: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

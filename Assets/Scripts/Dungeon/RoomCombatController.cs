@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class RoomCombatController : MonoBehaviour
 {
-    [SerializeField] private SpawnCardPool spawnPool;
+    public SpawnCardPool spawnPool;
     private List<Wave> waves;
     private float waveDelay = 2.0f;
     private int currentWaveIndex = 0;
