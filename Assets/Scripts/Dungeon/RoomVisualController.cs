@@ -55,6 +55,11 @@ public class RoomVisualController : MonoBehaviour
             Color originalColor = renderer.material.GetColor(BaseColorID);
             originalWallAlphas[segment] = originalColor.a; // Store original alpha
 
+            // also make sure the property block is populated with that base color
+            // so future GetPropertyBlock() calls will return the correct value
+            block.SetColor(BaseColorID, originalColor);
+            renderer.SetPropertyBlock(block);
+
             // Store the material property block to modify later
             wallPropertyBlocks[segment] = block;
         }
@@ -163,7 +168,17 @@ public class RoomVisualController : MonoBehaviour
     public Color GetWallSegmentColor(WallSegment segment)
     {
         MaterialPropertyBlock block = wallPropertyBlocks[segment];
-        segment.GetComponentInChildren<Renderer>().GetPropertyBlock(block);
-        return block.GetColor(BaseColorID);
+        Renderer renderer = segment.GetComponentInChildren<Renderer>();
+        renderer.GetPropertyBlock(block);
+        Color color = block.GetColor(BaseColorID);
+        // if the block didn't actually have a base color yet, fall back to the material's color
+        if (Mathf.Approximately(color.a, 0f))
+        {
+            color = renderer.material.GetColor(BaseColorID);
+            // also populate the block so subsequent calls return correctly
+            block.SetColor(BaseColorID, color);
+            renderer.SetPropertyBlock(block);
+        }
+        return color;
     }
 }

@@ -2,6 +2,25 @@ using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
 
+[System.Serializable]
+public class RoomConfig
+{
+    public int width = 10;
+    public int length = 8;
+    public int height = 3;
+
+    [Header("Door Settings")]
+    public int doorHeight = 1;
+    public int doorWidth = 2;
+    public Vector3 doorSize = Vector3.one;
+
+    // the basic tile/wall/door prefabs used to build the room
+    public GameObject floorPrefab;
+    public GameObject wallPrefab;
+    public GameObject doorPrefab;
+    public SpawnCardPool spawnPool;
+}
+
 public class DungeonGenerator : MonoBehaviour
 {
     public float tileSize = 1f;
@@ -19,14 +38,9 @@ public class DungeonGenerator : MonoBehaviour
     [Header("Room Visibility Settings")]
     public float roomVisibilityTriggerPadding = 1f;
 
-    [Header("Prefabs/Assigns")]
-    public GameObject startRoomPrefab;
-    public GameObject normalRoomPrefab;
-    public GameObject bossRoomPrefab;
-    public GameObject treasureRoomPrefab;
-    public GameObject shopRoomPrefab;
-    public GameObject secretRoomPrefab;
-    public RoomGenerator roomTemplate;
+    [Header("Room templates")]
+    public List<RoomConfig> roomConfigs = new List<RoomConfig>();
+
     public NavMeshSurface navMeshSurface;
 
     private Dictionary<Vector2Int, DungeonRoom> rooms =
@@ -45,6 +59,16 @@ public class DungeonGenerator : MonoBehaviour
         startRoom.gridPosition = startPos;
         startRoom.roomType = RoomType.Start;
         startRoom.distanceFromStart = 0;
+
+        // choose a configuration for the start room (fall back to first if list empty)
+        RoomConfig startConfig = ChooseConfig();
+        if (startConfig != null)
+        {
+            startRoom.config = startConfig;
+            startRoom.width = startConfig.width;
+            startRoom.length = startConfig.length;
+            startRoom.height = startConfig.height;
+        }
 
         rooms.Add(startPos, startRoom);
 
@@ -67,6 +91,16 @@ public class DungeonGenerator : MonoBehaviour
                 newRoom.parent = randomRoom;
                 newRoom.distanceFromStart = randomRoom.distanceFromStart + 1;
 
+                // assign a random template for this new room
+                RoomConfig cfg = ChooseConfig();
+                if (cfg != null)
+                {
+                    newRoom.config = cfg;
+                    newRoom.width = cfg.width;
+                    newRoom.length = cfg.length;
+                    newRoom.height = cfg.height;
+                }
+
                 ConnectRooms(randomRoom, newRoom, dir);
 
                 rooms.Add(newPos, newRoom);
@@ -74,51 +108,53 @@ public class DungeonGenerator : MonoBehaviour
         }
 
         AssignSpecialRooms();
+
+        // calculate all room world positions now that secret rooms (and any extras)
+        // have been added and have proper size data
+        CalculateWorldPositions();
+
         SpawnRooms();
         GenerateBorderWalls();
         navMeshSurface.RemoveData();
         navMeshSurface.BuildNavMesh();
+
+        // move the player into the start room now that we know its world position
+        PositionPlayerAtStart();
+
         FindFirstObjectByType<SpawnNodeManager>().Initialize();
     }
 
     void SpawnRooms()
     {
-        float roomWidthWorld  = roomTemplate.width  * tileSize;
-        float roomLengthWorld = roomTemplate.length * tileSize;
-
         foreach (var room in rooms.Values)
         {
-            Vector3 worldPos = new Vector3(
-                room.gridPosition.x * roomWidthWorld,
-                0,
-                room.gridPosition.y * roomLengthWorld
-            );
+            // use the calculated world position (takes varying sizes into account)
+            Vector3 worldPos = room.worldPosition;
 
-            GameObject prefabToUse = normalRoomPrefab;
+            // create a new GameObject and add a RoomGenerator component
+            GameObject roomObj = new GameObject(room.roomType + " Room");
+            roomObj.transform.position = worldPos;
+            RoomGenerator generator = roomObj.AddComponent<RoomGenerator>();
 
-            switch (room.roomType)
+            // copy settings from the room's config (if any)
+            if (room.config != null)
             {
-                case RoomType.Start:
-                    prefabToUse = startRoomPrefab;
-                    break;
-                case RoomType.Normal:
-                    prefabToUse = normalRoomPrefab;
-                    break;
-                case RoomType.Boss:
-                    prefabToUse = bossRoomPrefab;
-                    break;
-                case RoomType.Treasure:
-                    prefabToUse = treasureRoomPrefab;
-                    break;
-                case RoomType.Shop:
-                    prefabToUse = shopRoomPrefab;
-                    break;
-                case RoomType.Secret:
-                    prefabToUse = secretRoomPrefab;
-                    break;
+                generator.width = room.config.width;
+                generator.length = room.config.length;
+                generator.height = room.config.height;
+                generator.doorHeight = room.config.doorHeight;
+                generator.doorWidth = room.config.doorWidth;
+                generator.doorSize = room.config.doorSize;
+                generator.floorPrefab = room.config.floorPrefab;
+                generator.wallPrefab = room.config.wallPrefab;
+                generator.doorPrefab = room.config.doorPrefab;
+                if (room.roomType != RoomType.Start)
+                {
+                    RoomCombatController roomCombatController = roomObj.AddComponent<RoomCombatController>();
+                    roomCombatController.spawnPool = room.config.spawnPool;
+                }
             }
 
-            GameObject roomObj = Instantiate(prefabToUse, worldPos, Quaternion.identity);
             room.spawnedObject = roomObj;
 
             GameObject triggerChild = new GameObject("RoomTrigger");
@@ -129,7 +165,6 @@ public class DungeonGenerator : MonoBehaviour
             trigger.visibilityController = FindFirstObjectByType<DungeonVisibilityController>();
             trigger.transform.position = roomObj.transform.position;
 
-            RoomGenerator generator = roomObj.GetComponent<RoomGenerator>();
             generator.GenerateRoom(room, tileSize);
 
             BoxCollider col = triggerChild.AddComponent<BoxCollider>();
@@ -205,6 +240,91 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
+    void CalculateWorldPositions()
+    {
+        if (rooms.Count == 0)
+            return;
+
+        // anchor start room at origin if possible
+        DungeonRoom start;
+        if (!rooms.TryGetValue(Vector2Int.zero, out start))
+            start = new List<DungeonRoom>(rooms.Values)[0];
+
+        // initialize positions (necessary for neighbors to reference)
+        foreach (var r in rooms.Values)
+            r.worldPosition = Vector3.zero;
+        start.worldPosition = Vector3.zero;
+
+        bool changed = true;
+        int iterations = 0;
+        int maxIterations = rooms.Count * 10;
+
+        while (changed && iterations < maxIterations)
+        {
+            iterations++;
+            changed = false;
+
+            // keep anchor locked
+            start.worldPosition = Vector3.zero;
+
+            foreach (var room in rooms.Values)
+            {
+                Vector3 sum = Vector3.zero;
+                int count = 0;
+
+                // for each neighbor compute where *this* room should be relative to them
+                if (room.north.exists && room.north.neighbor != null)
+                {
+                    float offset = (room.length * tileSize + room.north.neighbor.length * tileSize) * 0.5f;
+                    Vector3 candidate = room.north.neighbor.worldPosition - Vector3.forward * offset;
+                    sum += candidate;
+                    count++;
+                }
+                if (room.south.exists && room.south.neighbor != null)
+                {
+                    float offset = (room.length * tileSize + room.south.neighbor.length * tileSize) * 0.5f;
+                    Vector3 candidate = room.south.neighbor.worldPosition - Vector3.back * offset; // back = -forward
+                    sum += candidate;
+                    count++;
+                }
+                if (room.east.exists && room.east.neighbor != null)
+                {
+                    float offset = (room.width * tileSize + room.east.neighbor.width * tileSize) * 0.5f;
+                    Vector3 candidate = room.east.neighbor.worldPosition - Vector3.right * offset;
+                    sum += candidate;
+                    count++;
+                }
+                if (room.west.exists && room.west.neighbor != null)
+                {
+                    float offset = (room.width * tileSize + room.west.neighbor.width * tileSize) * 0.5f;
+                    Vector3 candidate = room.west.neighbor.worldPosition - Vector3.left * offset; // left = -right
+                    sum += candidate;
+                    count++;
+                }
+
+                if (count > 0)
+                {
+                    Vector3 desired = sum / count;
+                    if ((room.worldPosition - desired).sqrMagnitude > 0.0001f)
+                    {
+                        room.worldPosition = desired;
+                        changed = true;
+                    }
+                }
+            }
+        }
+    }
+
+    RoomConfig ChooseConfig()
+    {
+        if (roomConfigs == null || roomConfigs.Count == 0)
+        {
+            // return a default config so rooms still have a size
+            return new RoomConfig();
+        }
+        return roomConfigs[Random.Range(0, roomConfigs.Count)];
+    }
+
     void LockEntranceToRoom(DungeonRoom room)
     {
         foreach (var other in rooms.Values)
@@ -230,6 +350,29 @@ public class DungeonGenerator : MonoBehaviour
             {
                 other.east.isLocked = true;
                 room.west.isLocked = true;
+            }
+        }
+    }
+
+    void PositionPlayerAtStart()
+    {
+        
+        if (rooms.TryGetValue(Vector2Int.zero, out DungeonRoom start))
+        {
+            GameObject playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null)
+            {
+                // center on floor, preserve current y position or bump slightly above floor
+                Vector3 offset = new Vector3(start.width * tileSize * 0.5f,
+                                             0f,
+                                             start.length * tileSize * 0.5f);
+                Vector3 newPos = start.worldPosition + offset;
+                // keep existing Y if above zero, otherwise set to 1
+                if (playerObj.transform.position.y > 0f)
+                    newPos.y = playerObj.transform.position.y;
+                else
+                    newPos.y = 1f;
+                playerObj.transform.position = newPos;
             }
         }
     }
@@ -305,6 +448,27 @@ public class DungeonGenerator : MonoBehaviour
             secretRoom.gridPosition = chosen;
             secretRoom.roomType = RoomType.Secret;
 
+            // choose a configuration for the secret room as well
+            RoomConfig cfg = ChooseConfig();
+            if (cfg != null)
+            {
+                secretRoom.config = cfg;
+                secretRoom.width = cfg.width;
+                secretRoom.length = cfg.length;
+                secretRoom.height = cfg.height;
+            }
+
+            // connect secret room to one of its adjacent existing rooms
+            foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+            {
+                Vector2Int neighborPos = chosen + dir;
+                if (rooms.TryGetValue(neighborPos, out DungeonRoom neighbour))
+                {
+                    ConnectRooms(neighbour, secretRoom, dir * -1); // dir from neighbour to secret
+                    break;
+                }
+            }
+
             rooms.Add(chosen, secretRoom);
         }
     }
@@ -362,19 +526,15 @@ public class DungeonGenerator : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        if (rooms == null || roomTemplate == null)
+        if (rooms == null)
             return;
 
         foreach (var room in rooms.Values)
         {
-            float roomWidthWorld  = roomTemplate.width  * tileSize;
-            float roomLengthWorld = roomTemplate.length * tileSize;
+            float roomWidthWorld  = room.width * tileSize;
+            float roomLengthWorld = room.length * tileSize;
 
-            Vector3 pos = new Vector3(
-                room.gridPosition.x * roomWidthWorld + roomWidthWorld * 0.5f,
-                0,
-                room.gridPosition.y * roomLengthWorld + roomLengthWorld * 0.5f
-            );
+            Vector3 pos = room.worldPosition + new Vector3(roomWidthWorld * 0.5f, 0, roomLengthWorld * 0.5f);
 
             // Draw node
             Gizmos.color = GetRoomColor(room);

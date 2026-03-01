@@ -35794,13 +35794,17 @@ MonoBehaviour:
   maxShopRooms: 1
   maxSecretRooms: 1
   roomVisibilityTriggerPadding: 2
-  startRoomPrefab: {fileID: 3512645313603498155, guid: 15af5d29e69498f4bac120c4a0ab29da, type: 3}
-  normalRoomPrefab: {fileID: 3512645313603498155, guid: 7e366ae086e423148997a72a4f640092, type: 3}
-  bossRoomPrefab: {fileID: 3512645313603498155, guid: ae2bb8855eb814d4281b6c99b192c759, type: 3}
-  treasureRoomPrefab: {fileID: 3512645313603498155, guid: 952d9ad716d053d4f876f86e963587f0, type: 3}
-  shopRoomPrefab: {fileID: 3512645313603498155, guid: e2fb6cf486a8a6d4fbb750cddc0eb84d, type: 3}
-  secretRoomPrefab: {fileID: 3512645313603498155, guid: e22b4518a92ef6f41b140607a4eef3bd, type: 3}
-  roomTemplate: {fileID: 3988267445057372660, guid: 15af5d29e69498f4bac120c4a0ab29da, type: 3}
+  roomConfigs:
+  - width: 20
+    length: 20
+    height: 5
+    doorHeight: 3
+    doorWidth: 3
+    doorSize: {x: 2, y: 2, z: 3}
+    floorPrefab: {fileID: 8502109849496396539, guid: 739e5dd2a4c45894daa2cb1bde9ed3a6, type: 3}
+    wallPrefab: {fileID: 2566322214346239352, guid: a5189af262ff5ce499b7bfcac60f5444, type: 3}
+    doorPrefab: {fileID: 7385880390675237224, guid: c342b9a4d4cf01443900522e4dab3cb0, type: 3}
+    spawnPool: {fileID: 11400000, guid: d4326822a316f17458f7e3242dde9475, type: 2}
   navMeshSurface: {fileID: 1792320178}
 --- !u!1 &1866474748
 GameObject:

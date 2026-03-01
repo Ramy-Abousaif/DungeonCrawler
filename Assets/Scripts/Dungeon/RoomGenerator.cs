@@ -31,16 +31,30 @@ public class RoomGenerator : MonoBehaviour
         Vector2Int northPos = roomData.gridPosition + Vector2Int.up;
         Vector2Int eastPos = roomData.gridPosition + Vector2Int.right;
 
-        // Only generate north wall if no room exists to the north
-        if (!allRooms.ContainsKey(northPos))
+        if (!allRooms.TryGetValue(northPos, out DungeonRoom northRoom))
         {
-            GenerateNorthEdge(roomData, tileSize);
+            // completely free to the north -> full wall
+            GenerateNorthEdge(tileSize);
+        }
+        else
+        {
+            // neighbor exists; if it's narrower than us we still need walls on the
+            // exposed portions of our north face so the gap doesn't leave a
+            // corridor.
+            int diff = width - northRoom.width;
+            if (diff > 0)
+                GenerateNorthEdgePartial(tileSize, northRoom.width);
         }
 
-        // Only generate east wall if no room exists to the east
-        if (!allRooms.ContainsKey(eastPos))
+        if (!allRooms.TryGetValue(eastPos, out DungeonRoom eastRoom))
         {
-            GenerateEastEdge(roomData, tileSize);
+            GenerateEastEdge(tileSize);
+        }
+        else
+        {
+            int diff = length - eastRoom.length;
+            if (diff > 0)
+                GenerateEastEdgePartial(tileSize, eastRoom.length);
         }
     }
 
@@ -86,7 +100,21 @@ public class RoomGenerator : MonoBehaviour
         GameObject wallParent = CreateWallParent("SouthWalls");
         int z = 0;
 
-        bool hasNeighbor = roomData.south.exists;
+        // determine if this connection involves a secret room (either side) and a real neighbour
+        bool secretConnection = roomData.south.exists && (
+            roomData.roomType == RoomType.Secret ||
+            roomData.south.neighbor.roomType == RoomType.Secret);
+
+        // only carve a door if there's a real neighbor and neither room is a secret
+        bool hasNeighbor = roomData.south.exists && !secretConnection;
+
+        // create a subparent for any wall blocks that fill the would-be door area of a secret
+        GameObject secretParent = null;
+        if (secretConnection)
+        {
+            secretParent = new GameObject("SecretWall");
+            secretParent.transform.SetParent(wallParent.transform);
+        }
 
         int midX = width / 2;
         int halfDoor = doorWidth / 2;
@@ -109,8 +137,16 @@ public class RoomGenerator : MonoBehaviour
                 if (!carveDoor)
                 {
                     GameObject wall = SpawnWall(x, z, h, false, tileSize);
-                    wall.transform.SetParent(wallParent.transform);
-                    AddWallToSegment(wallParent, wall);
+                    GameObject parentForWall = wallParent;
+                    bool inDoorRange = x >= doorStart && x < doorEnd;
+                    bool belowDoorHeight = h < doorHeight;
+                    if (secretConnection && inDoorRange && belowDoorHeight && secretParent != null)
+                    {
+                        parentForWall = secretParent;
+                    }
+                    wall.transform.SetParent(parentForWall.transform);
+                    if(parentForWall != secretParent)
+                        AddWallToSegment(parentForWall, wall);
                 }
             }
         }
@@ -121,7 +157,20 @@ public class RoomGenerator : MonoBehaviour
         GameObject wallParent = CreateWallParent("WestWalls");
         int x = 0;
 
-        bool hasNeighbor = roomData.west.exists;
+        // only consider a secret connection if there's actually an adjacent room
+        bool secretConnection = roomData.west.exists && (
+            roomData.roomType == RoomType.Secret ||
+            roomData.west.neighbor.roomType == RoomType.Secret);
+
+        // don't make an opening if either room is secret
+        bool hasNeighbor = roomData.west.exists && !secretConnection;
+
+        GameObject secretParent = null;
+        if (secretConnection)
+        {
+            secretParent = new GameObject("SecretWall");
+            secretParent.transform.SetParent(wallParent.transform);
+        }
 
         int midZ = length / 2;
         int halfDoor = doorWidth / 2;
@@ -144,14 +193,22 @@ public class RoomGenerator : MonoBehaviour
                 if (!carveDoor)
                 {
                     GameObject wall = SpawnWall(x, z, h, true, tileSize);
-                    wall.transform.SetParent(wallParent.transform);
-                    AddWallToSegment(wallParent, wall);
+                    GameObject parentForWall = wallParent;
+                    bool inDoorRange = z >= doorStart && z < doorEnd;
+                    bool belowDoorHeight = h < doorHeight;
+                    if (secretConnection && inDoorRange && belowDoorHeight && secretParent != null)
+                    {
+                        parentForWall = secretParent;
+                    }
+                    wall.transform.SetParent(parentForWall.transform);
+                    if(parentForWall != secretParent)
+                        AddWallToSegment(parentForWall, wall);
                 }
             }
         }
     }
 
-    void GenerateNorthEdge(DungeonRoom roomData, float tileSize)
+    void GenerateNorthEdge(float tileSize)
     {
         GameObject wallParent = CreateWallParent("NorthWalls");
         int z = length - 1;
@@ -167,12 +224,80 @@ public class RoomGenerator : MonoBehaviour
         }
     }
 
-    void GenerateEastEdge(DungeonRoom roomData, float tileSize)
+    void GenerateEastEdge(float tileSize)
     {
         GameObject wallParent = CreateWallParent("EastWalls");
         int x = width - 1;
 
         for (int z = 0; z < length; z++)
+        {
+            for (int h = 0; h < height; h++)
+            {
+                GameObject wall = SpawnWall(x, z, h, true, tileSize);
+                wall.transform.SetParent(wallParent.transform);
+                AddWallToSegment(wallParent, wall);
+            }
+        }
+    }
+
+    void GenerateNorthEdgePartial(float tileSize, int neighborWidth)
+    {
+        GameObject wallParent = CreateWallParent("NorthWalls");
+        int z = length - 1;
+
+        int diff = width - neighborWidth;
+        if (diff <= 0)
+            return;
+        int leftCount = diff / 2;
+        int rightCount = diff - leftCount;
+
+        // left portion
+        for (int x = 0; x < leftCount; x++)
+        {
+            for (int h = 0; h < height; h++)
+            {
+                GameObject wall = SpawnWall(x, z, h, false, tileSize);
+                wall.transform.SetParent(wallParent.transform);
+                AddWallToSegment(wallParent, wall);
+            }
+        }
+
+        // right portion
+        for (int x = width - rightCount; x < width; x++)
+        {
+            for (int h = 0; h < height; h++)
+            {
+                GameObject wall = SpawnWall(x, z, h, false, tileSize);
+                wall.transform.SetParent(wallParent.transform);
+                AddWallToSegment(wallParent, wall);
+            }
+        }
+    }
+
+    void GenerateEastEdgePartial(float tileSize, int neighborLength)
+    {
+        GameObject wallParent = CreateWallParent("EastWalls");
+        int x = width - 1;
+
+        int diff = length - neighborLength;
+        if (diff <= 0)
+            return;
+        int bottomCount = diff / 2;
+        int topCount = diff - bottomCount;
+
+        // bottom portion (z negative direction)
+        for (int z = 0; z < bottomCount; z++)
+        {
+            for (int h = 0; h < height; h++)
+            {
+                GameObject wall = SpawnWall(x, z, h, true, tileSize);
+                wall.transform.SetParent(wallParent.transform);
+                AddWallToSegment(wallParent, wall);
+            }
+        }
+
+        // top portion
+        for (int z = length - topCount; z < length; z++)
         {
             for (int h = 0; h < height; h++)
             {
@@ -329,7 +454,11 @@ public class RoomGenerator : MonoBehaviour
                 roomLengthWorld + (tileSize / 2)
             );
 
-            CreateDoor(roomData, roomData.north.neighbor, pos, Quaternion.identity);
+            var neighbor = roomData.north.neighbor;
+            if (!(roomData.roomType == RoomType.Secret || neighbor.roomType == RoomType.Secret))
+            {
+                CreateDoor(roomData, neighbor, pos, Quaternion.identity);
+            }
         }
 
         // EAST (only if neighbor is right)
@@ -342,9 +471,14 @@ public class RoomGenerator : MonoBehaviour
                 (roomLengthWorld * 0.5f) + (tileSize / 2)
             );
 
-            CreateDoor(roomData, roomData.east.neighbor, pos, Quaternion.Euler(0, 90, 0));
+            var neighbor = roomData.east.neighbor;
+            if (!(roomData.roomType == RoomType.Secret || neighbor.roomType == RoomType.Secret))
+            {
+                CreateDoor(roomData, neighbor, pos, Quaternion.Euler(0, 90, 0));
+            }
         }
     }
+
 
     void CreateDoor(DungeonRoom a, DungeonRoom b, Vector3 localPosition, Quaternion rotation)
     {
