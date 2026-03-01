@@ -4811,7 +4811,7 @@ GameObject:
   - component: {fileID: 8765285693602411637}
   - component: {fileID: -4099841921391184949}
   m_Layer: 0
-  m_Name: Circle
+  m_Name: JumpscareFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

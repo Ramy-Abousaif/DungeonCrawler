@@ -48,15 +48,12 @@ MonoBehaviour:
   width: 20
   length: 20
   height: 5
-  tileSize: 4
   doorHeight: 3
   doorWidth: 3
   doorSize: {x: 2, y: 2, z: 3}
-  floorPrefab: {fileID: 5395501987589175346, guid: 9828fb3d95bf37b4ab9d7ebc28d6cf86, type: 3}
-  wallPrefab: {fileID: 5395501987589175346, guid: 9828fb3d95bf37b4ab9d7ebc28d6cf86, type: 3}
+  floorPrefab: {fileID: 8502109849496396539, guid: 739e5dd2a4c45894daa2cb1bde9ed3a6, type: 3}
+  wallPrefab: {fileID: 2566322214346239352, guid: a5189af262ff5ce499b7bfcac60f5444, type: 3}
   doorPrefab: {fileID: 7385880390675237224, guid: c342b9a4d4cf01443900522e4dab3cb0, type: 3}
-  floorMat: {fileID: 2100000, guid: 2ee04ace06a848e4582d69e5909b478c, type: 2}
-  wallMat: {fileID: 2100000, guid: eace8f1c3fce82f40911788cb644b8be, type: 2}
 --- !u!114 &-337710029720648214
 MonoBehaviour:
   m_ObjectHideFlags: 0

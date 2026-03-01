@@ -1642,7 +1642,7 @@ Transform:
   m_GameObject: {fileID: 81005852}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 96.7, z: 0}
+  m_LocalPosition: {x: 11.85, y: 96.7, z: 15.48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5075,7 +5075,7 @@ Transform:
   m_GameObject: {fileID: 246817910}
   serializedVersion: 2
   m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
-  m_LocalPosition: {x: -35.211414, y: 125.450005, z: -35.211414}
+  m_LocalPosition: {x: -23.361414, y: 125.450005, z: -19.731415}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -20035,7 +20035,7 @@ Transform:
   m_GameObject: {fileID: 801452971}
   serializedVersion: 2
   m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
-  m_LocalPosition: {x: -35.211414, y: 125.450005, z: -35.211414}
+  m_LocalPosition: {x: -23.361414, y: 125.450005, z: -19.731415}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35785,6 +35785,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2276a9f26da370f45af2c61e05f2ac93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGenerator
+  tileSize: 4
   targetRoomCount: 12
   treasureChance: 1
   shopChance: 1

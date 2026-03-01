@@ -101,10 +101,10 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaClipThreshold: 0.09
-    - _AlphaToMask: 0
+    - _AlphaToMask: 1
     - _Blend: 0
-    - _BlendModePreserveSpecular: 0
-    - _BumpScale: 0
+    - _BlendModePreserveSpecular: 1
+    - _BumpScale: 1
     - _CastShadows: 0
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
@@ -112,30 +112,30 @@ Material:
     - _Cutoff: 0.5
     - _DETAIL_MULX2: 0
     - _DeepGrassHeight: 8.26
-    - _DetailAlbedoMapScale: 0
-    - _DetailNormalMapScale: 0
+    - _DetailAlbedoMapScale: 1
+    - _DetailNormalMapScale: 1
     - _DiffuseVertexColorWeight: 1
     - _DissolveAmount: 0
     - _DissolveScale: 0
     - _DissolveSlider: 0.5
     - _DissolveWidth: 0
     - _Dissolveable: 0
-    - _DstBlend: 10
-    - _DstBlendAlpha: 10
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _EMISSION: 0
     - _ENVIRONMENT_REFLECTIONS_OFF: 0
     - _EdgeBevelWeight: 0
     - _EmissiveVertexColorWeight: 0
-    - _EnvironmentReflections: 0
+    - _EnvironmentReflections: 1
     - _FlashAmount: 0
     - _FormAmount: 0
     - _FresnelAmount: 2
-    - _Gamma: 1
+    - _Gamma: 2
     - _GlitchStrength: 0.5
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _ID: 3
+    - _ID: 0
     - _METALLICSPECGLOSSMAP: 0
     - _Metallic: 0
     - _NORMALMAP: 0
@@ -156,17 +156,17 @@ Material:
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 0
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Surface: 1
+    - _Surface: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZTest: 4
     - _ZWrite: 1
-    - _ZWriteControl: 1
+    - _ZWriteControl: 0
     m_Colors:
-    - _AmbientLight: {r: 0.31132078, g: 0.31132078, b: 0.31132078, a: 0.62}
-    - _BaseColor: {r: 1, g: 0, b: 0, a: 1}
+    - _AmbientLight: {r: 0.30980393, g: 0.30980393, b: 0.30980393, a: 0.62}
+    - _BaseColor: {r: 1, g: 0.053243, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DeepGrassColor: {r: 0.16221808, g: 0.4433962, b: 0, a: 1}
     - _DissolveColor: {r: 3.580254, g: 0, b: 8, a: 1}

@@ -8,7 +8,6 @@ public class RoomGenerator : MonoBehaviour
     public int width = 10;
     public int length = 8;
     public int height = 3;
-    public float tileSize = 1f;
 
     [Header("Door Settings")]
     public int doorHeight = 1;
@@ -18,96 +17,197 @@ public class RoomGenerator : MonoBehaviour
     public GameObject floorPrefab;
     public GameObject wallPrefab;
     public GameObject doorPrefab;
-    public Material floorMat;
-    public Material wallMat;
 
-    public void GenerateRoom(DungeonRoom roomData)
+    public void GenerateRoom(DungeonRoom roomData, float tileSize)
     {
-        GenerateFloor();
-        GenerateWalls(roomData);
-        SetupRoomLighting(roomData);
+        GenerateFloor(tileSize);
+        GenerateWalls(roomData, tileSize);
+        SetupRoomLighting(tileSize);
     }
 
-    void GenerateFloor()
+    public void GenerateBorderWalls(DungeonRoom roomData, float tileSize, Dictionary<Vector2Int, DungeonRoom> allRooms)
     {
-        List<GameObject> floorBlocks = new List<GameObject>();
+        // Check if a room actually exists in those directions (not just connection exists)
+        Vector2Int northPos = roomData.gridPosition + Vector2Int.up;
+        Vector2Int eastPos = roomData.gridPosition + Vector2Int.right;
 
+        // Only generate north wall if no room exists to the north
+        if (!allRooms.ContainsKey(northPos))
+        {
+            GenerateNorthEdge(roomData, tileSize);
+        }
+
+        // Only generate east wall if no room exists to the east
+        if (!allRooms.ContainsKey(eastPos))
+        {
+            GenerateEastEdge(roomData, tileSize);
+        }
+    }
+
+    void GenerateFloor(float tileSize)
+    {
+        GameObject floorRoot = new GameObject("Floors");
+        floorRoot.transform.SetParent(transform);
+        floorRoot.transform.localPosition = Vector3.zero;
+        floorRoot.isStatic = true;
         for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < length; z++)
             {
-                GameObject temp = new GameObject("FloorBlock");
-                temp.transform.SetParent(transform);
-                temp.transform.localPosition = new Vector3(
-                    x * tileSize,
-                    -1,
-                    z * tileSize
+                GameObject tile = Instantiate(floorPrefab, floorRoot.transform);
+                tile.transform.localPosition = new Vector3(
+                    (x * tileSize) + (tileSize / 2),
+                    0,
+                    z * tileSize + (tileSize / 2)
                 );
 
-                floorBlocks.Add(temp);
+                tile.layer = LayerMask.NameToLayer("Ground");
+                tile.name = "Floor";
+
+                int randomStep = Random.Range(0, 4);
+                float randomYRotation = randomStep * 90f;
+                Quaternion rotation = Quaternion.Euler(0f, randomYRotation, 0f);
+                tile.transform.localRotation = rotation;
+                tile.transform.localScale = new Vector3(floorPrefab.transform.localScale.x * tileSize, floorPrefab.transform.localScale.y, floorPrefab.transform.localScale.z * tileSize);
+                tile.isStatic = true;
             }
         }
-
-        CombineMesh(floorBlocks, "Floor", floorMat, LayerMask.NameToLayer("Ground"));
     }
 
-    void GenerateWalls(DungeonRoom roomData)
+    void GenerateWalls(DungeonRoom roomData, float tileSize)
     {
+        GenerateSouthEdge(roomData, tileSize);
+        GenerateWestEdge(roomData, tileSize);
+        SpawnDoors(roomData, tileSize);
+    }
+
+    void GenerateSouthEdge(DungeonRoom roomData, float tileSize)
+    {
+        GameObject wallParent = CreateWallParent("SouthWalls");
+        int z = 0;
+
+        bool hasNeighbor = roomData.south.exists;
+
         int midX = width / 2;
-        int midZ = length / 2;
-
         int halfDoor = doorWidth / 2;
+        int doorStart = midX - halfDoor;
+        int doorEnd = doorStart + doorWidth;
 
-        int doorStartX = midX - halfDoor;
-        int doorEndX   = doorStartX + doorWidth;
-
-        int doorStartZ = midZ - halfDoor;
-        int doorEndZ   = doorStartZ + doorWidth;
-
-        List<GameObject> northWalls = new List<GameObject>();
-        List<GameObject> southWalls = new List<GameObject>();
-        List<GameObject> eastWalls = new List<GameObject>();
-        List<GameObject> westWalls = new List<GameObject>();
         for (int x = 0; x < width; x++)
         {
             for (int h = 0; h < height; h++)
             {
-                bool isDoorOpening = x >= doorStartX && x < doorEndX && h < doorHeight;
-                if (!(roomData.south.exists && isDoorOpening))
+                bool carveDoor = false;
+
+                if (hasNeighbor)
                 {
-                    southWalls.Add(SpawnWall(x, 0, h, false));
+                    bool inDoorRange = x >= doorStart && x < doorEnd;
+                    bool belowDoorHeight = h < doorHeight;
+                    carveDoor = inDoorRange && belowDoorHeight;
                 }
-                if (!(roomData.north.exists && isDoorOpening))
+
+                if (!carveDoor)
                 {
-                    northWalls.Add(SpawnWall(x, length - 1, h, false));
+                    GameObject wall = SpawnWall(x, z, h, false, tileSize);
+                    wall.transform.SetParent(wallParent.transform);
+                    AddWallToSegment(wallParent, wall);
                 }
             }
         }
+    }
 
-        for (int z = 1; z < length - 1; z++)
+    void GenerateWestEdge(DungeonRoom roomData, float tileSize)
+    {
+        GameObject wallParent = CreateWallParent("WestWalls");
+        int x = 0;
+
+        bool hasNeighbor = roomData.west.exists;
+
+        int midZ = length / 2;
+        int halfDoor = doorWidth / 2;
+        int doorStart = midZ - halfDoor;
+        int doorEnd = doorStart + doorWidth;
+
+        for (int z = 0; z < length; z++)
         {
             for (int h = 0; h < height; h++)
             {
-                bool isDoorOpening = z >= doorStartZ && z < doorEndZ && h < doorHeight;
-                if (!(roomData.west.exists && isDoorOpening))
+                bool carveDoor = false;
+
+                if (hasNeighbor)
                 {
-                    westWalls.Add(SpawnWall(0, z, h, true));
+                    bool inDoorRange = z >= doorStart && z < doorEnd;
+                    bool belowDoorHeight = h < doorHeight;
+                    carveDoor = inDoorRange && belowDoorHeight;
                 }
-                if (!(roomData.east.exists && isDoorOpening))
+
+                if (!carveDoor)
                 {
-                    eastWalls.Add(SpawnWall(width - 1, z, h, true));
+                    GameObject wall = SpawnWall(x, z, h, true, tileSize);
+                    wall.transform.SetParent(wallParent.transform);
+                    AddWallToSegment(wallParent, wall);
                 }
             }
         }
-
-        CombineMesh(northWalls, "NorthWall", wallMat, LayerMask.NameToLayer("Wall"), true);
-        CombineMesh(southWalls, "SouthWall", wallMat, LayerMask.NameToLayer("Wall"), true);
-        CombineMesh(eastWalls, "EastWall", wallMat, LayerMask.NameToLayer("Wall"), true);
-        CombineMesh(westWalls, "WestWall", wallMat, LayerMask.NameToLayer("Wall"), true);
-        SpawnDoors(roomData);
     }
 
-    void SetupRoomLighting(DungeonRoom roomData)
+    void GenerateNorthEdge(DungeonRoom roomData, float tileSize)
+    {
+        GameObject wallParent = CreateWallParent("NorthWalls");
+        int z = length - 1;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int h = 0; h < height; h++)
+            {
+                GameObject wall = SpawnWall(x, z, h, false, tileSize);
+                wall.transform.SetParent(wallParent.transform);
+                AddWallToSegment(wallParent, wall);
+            }
+        }
+    }
+
+    void GenerateEastEdge(DungeonRoom roomData, float tileSize)
+    {
+        GameObject wallParent = CreateWallParent("EastWalls");
+        int x = width - 1;
+
+        for (int z = 0; z < length; z++)
+        {
+            for (int h = 0; h < height; h++)
+            {
+                GameObject wall = SpawnWall(x, z, h, true, tileSize);
+                wall.transform.SetParent(wallParent.transform);
+                AddWallToSegment(wallParent, wall);
+            }
+        }
+    }
+
+    GameObject CreateWallParent(string parentName)
+    {
+        GameObject parent = new GameObject(parentName);
+        parent.transform.SetParent(transform);
+        return parent;
+    }
+
+    void AddWallToSegment(GameObject parent, GameObject wall)
+    {
+        // Add WallSegment to the parent object of the wall
+        WallSegment wallSegment = parent.GetComponent<WallSegment>();
+        if (wallSegment == null)
+        {
+            wallSegment = parent.AddComponent<WallSegment>();
+        }
+
+        // Get all the MeshRenderers in the wall and add them to the WallSegment
+        Renderer[] renderers = wall.GetComponentsInChildren<Renderer>();
+        foreach (var renderer in renderers)
+        {
+            wallSegment.AddMesh(renderer);
+        }
+    }
+
+    void SetupRoomLighting(float tileSize)
     {
         GameObject lightingRoot = new GameObject("RoomLighting");
         lightingRoot.transform.SetParent(transform);
@@ -187,21 +287,21 @@ public class RoomGenerator : MonoBehaviour
         return light;
     }
 
-    GameObject SpawnWall(int x, int z, int h, bool isRotated)
+    GameObject SpawnWall(int x, int z, int h, bool isRotated, float tileSize)
     {
         GameObject wall = Instantiate(wallPrefab, transform);
         wall.transform.localPosition = new Vector3(
-            x * tileSize,
+            (x * tileSize) + (tileSize / 2f),
             (h + 0.5f) * tileSize,
-            z * tileSize
+            (z * tileSize) + (tileSize / 2f)
         );
 
         if (isRotated)
             wall.transform.localRotation = Quaternion.Euler(0, 90, 0);
 
         wall.layer = LayerMask.NameToLayer("Wall");
-        wall.GetComponent<MeshRenderer>().material = wallMat;
         wall.name = "Wall";
+        wall.isStatic = true;
         wall.transform.localScale = new Vector3(
             wallPrefab.transform.localScale.x * tileSize,
             wallPrefab.transform.localScale.y * tileSize,
@@ -211,7 +311,7 @@ public class RoomGenerator : MonoBehaviour
         return wall;
     }
 
-    void SpawnDoors(DungeonRoom roomData)
+    void SpawnDoors(DungeonRoom roomData, float tileSize)
     {
         if (doorPrefab == null)
             return;
@@ -226,7 +326,7 @@ public class RoomGenerator : MonoBehaviour
             Vector3 pos = new Vector3(
                 (roomWidthWorld * 0.5f) + (tileSize / 2),
                 0,
-                roomLengthWorld
+                roomLengthWorld + (tileSize / 2)
             );
 
             CreateDoor(roomData, roomData.north.neighbor, pos, Quaternion.identity);
@@ -237,7 +337,7 @@ public class RoomGenerator : MonoBehaviour
             roomData.east.neighbor.gridPosition.x > roomData.gridPosition.x)
         {
             Vector3 pos = new Vector3(
-                roomWidthWorld,
+                roomWidthWorld + (tileSize / 2),
                 0,
                 (roomLengthWorld * 0.5f) + (tileSize / 2)
             );
@@ -262,183 +362,6 @@ public class RoomGenerator : MonoBehaviour
             a.Doors.Add(door);
             b.Doors.Add(door);
         }
-    }
-
-    void CombineMesh(List<GameObject> pieces, string name, Material mat, LayerMask layer, bool isCarveable = false)
-    {
-        if (pieces.Count == 0) return;
-
-        HashSet<Vector3Int> occupied = new HashSet<Vector3Int>();
-
-        // Convert cube positions into grid coordinates
-        foreach (var piece in pieces)
-        {
-            Vector3 localPos = piece.transform.localPosition;
-            Vector3Int gridPos = new Vector3Int(
-                Mathf.RoundToInt(localPos.x / tileSize),
-                Mathf.RoundToInt((localPos.y - 0.5f * tileSize) / tileSize),
-                Mathf.RoundToInt(localPos.z / tileSize)
-            );
-
-            occupied.Add(gridPos);
-        }
-
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangles = new List<int>();
-        List<Vector2> uvs = new List<Vector2>();
-
-        int vCount = 0;
-
-        foreach (var pos in occupied)
-        {
-            vCount = AddVisibleFaces(pos, occupied, vertices, triangles, uvs, vCount);
-        }
-
-        Mesh combinedMesh = new Mesh();
-        combinedMesh.SetVertices(vertices);
-        combinedMesh.SetTriangles(triangles, 0);
-        combinedMesh.RecalculateNormals();
-        combinedMesh.RecalculateBounds();
-        combinedMesh.SetUVs(0, uvs);
-
-        GameObject combinedObj = new GameObject(name);
-        combinedObj.transform.SetParent(transform);
-        combinedObj.transform.localPosition = Vector3.zero;
-        combinedObj.layer = layer;
-        combinedObj.isStatic = true;
-
-        if (isCarveable)
-            CarveNavMesh(combinedObj);
-
-        MeshFilter mf = combinedObj.AddComponent<MeshFilter>();
-        mf.mesh = combinedMesh;
-
-        MeshRenderer mr = combinedObj.AddComponent<MeshRenderer>();
-        mr.material = mat;
-
-        MeshCollider collider = combinedObj.AddComponent<MeshCollider>();
-        collider.sharedMesh = combinedMesh;
-        collider.convex = false;
-
-        foreach (var piece in pieces)
-            Destroy(piece);
-    }
-
-    private void CarveNavMesh(GameObject combinedObj)
-    {
-        var nav = combinedObj.AddComponent<NavMeshObstacle>();
-        nav.carving = true;
-        if(combinedObj.name == "EastWall")
-        {
-            nav.center = new Vector3((width * tileSize) - (tileSize / 2), (height * tileSize) / 2, (length * tileSize) / 2);
-            nav.size = new Vector3(tileSize, height * tileSize, length * tileSize);
-        }
-        if(combinedObj.name == "WestWall")
-        {
-            nav.center = new Vector3(tileSize / 2, (height * tileSize) / 2, (length * tileSize) / 2);
-            nav.size = new Vector3(tileSize, height * tileSize, length * tileSize);
-        }
-        if(combinedObj.name == "SouthWall")
-        {
-            nav.center = new Vector3((width * tileSize) / 2, (height * tileSize) / 2, tileSize / 2);
-            nav.size = new Vector3((width * tileSize), height * tileSize, tileSize);
-        }
-        if(combinedObj.name == "NorthWall")
-        {
-            nav.center = new Vector3((width * tileSize) / 2, (height * tileSize) / 2, (length * tileSize) - (tileSize / 2));
-            nav.size = new Vector3((width * tileSize), height * tileSize, tileSize);
-        }
-    }
-
-    int AddVisibleFaces(
-    Vector3Int pos,
-    HashSet<Vector3Int> occupied,
-    List<Vector3> vertices,
-    List<int> triangles,
-    List<Vector2> uvs,
-    int vCount)
-    {
-        Vector3 basePos = new Vector3(pos.x, pos.y, pos.z) * tileSize;
-
-        Vector3Int[] directions =
-        {
-            Vector3Int.right,
-            Vector3Int.left,
-            Vector3Int.up,
-            Vector3Int.down,
-            new Vector3Int(0,0,1),
-            new Vector3Int(0,0,-1)
-        };
-
-        Vector3[,] faceVerts =
-        {
-            // +X
-            { new Vector3(1,0,0), new Vector3(1,1,0), new Vector3(1,1,1), new Vector3(1,0,1) },
-            // -X
-            { new Vector3(0,0,1), new Vector3(0,1,1), new Vector3(0,1,0), new Vector3(0,0,0) },
-            // +Y
-            { new Vector3(0,1,0), new Vector3(1,1,0), new Vector3(1,1,1), new Vector3(0,1,1) },
-            // -Y
-            { new Vector3(0,0,1), new Vector3(1,0,1), new Vector3(1,0,0), new Vector3(0,0,0) },
-            // +Z
-            { new Vector3(1,0,1), new Vector3(1,1,1), new Vector3(0,1,1), new Vector3(0,0,1) },
-            // -Z
-            { new Vector3(0,0,0), new Vector3(0,1,0), new Vector3(1,1,0), new Vector3(1,0,0) }
-        };
-
-        for (int i = 0; i < 6; i++)
-        {
-            if (!occupied.Contains(pos + directions[i]))
-            {
-                for (int j = 0; j < 4; j++)
-                    vertices.Add(basePos + faceVerts[i, j] * tileSize);
-
-                bool flip = (i == 2 || i == 3);
-
-                if (!flip)
-                {
-                    triangles.Add(vCount + 0);
-                    triangles.Add(vCount + 1);
-                    triangles.Add(vCount + 2);
-                    triangles.Add(vCount + 0);
-                    triangles.Add(vCount + 2);
-                    triangles.Add(vCount + 3);
-                }
-                else
-                {
-                    triangles.Add(vCount + 0);
-                    triangles.Add(vCount + 2);
-                    triangles.Add(vCount + 1);
-                    triangles.Add(vCount + 0);
-                    triangles.Add(vCount + 3);
-                    triangles.Add(vCount + 2);
-                }
-
-                if (i == 2) // +Y face (floor top)
-                {
-                    // World-aligned UVs
-                    uvs.Add(new Vector2(pos.x, pos.z));
-                    uvs.Add(new Vector2(pos.x + 1, pos.z));
-                    uvs.Add(new Vector2(pos.x + 1, pos.z + 1));
-                    uvs.Add(new Vector2(pos.x, pos.z + 1));
-                }
-                else
-                {
-                    // Default per-face tiling for walls
-                    uvs.AddRange(new Vector2[]
-                    {
-                        new Vector2(0, 0),
-                        new Vector2(1, 0),
-                        new Vector2(1, 1),
-                        new Vector2(0, 1)
-                    });
-                }
-
-                vCount += 4;
-            }
-        }
-
-        return vCount;
     }
 
     void OnValidate()

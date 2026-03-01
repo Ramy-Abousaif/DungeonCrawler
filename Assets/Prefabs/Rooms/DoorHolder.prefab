@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8456246110392500417}
   - component: {fileID: 2688247283547585632}
   - component: {fileID: 8355408980364641077}
+  - component: {fileID: 3768513564749259212}
   m_Layer: 19
   m_Name: Door
   m_TagString: Untagged
@@ -68,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 334cc750de9a38347a7a92e18bbb5249, type: 2}
+  - {fileID: 2100000, guid: 06fdadbc6a842a543950a9683848d860, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -124,6 +125,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 556fa983923eb2244af1d535ce003971, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Door
+  normalMat: {fileID: 2100000, guid: 9cfd29ead581b954db2369b71afea64e, type: 2}
+  bossMat: {fileID: 2100000, guid: 6a75a4c931251654db629b6a05607581, type: 2}
+  treasureMat: {fileID: 2100000, guid: dfffe007d799f04439b8c689f7f27ca0, type: 2}
+  shopMat: {fileID: 2100000, guid: 5620fa55819f1814ca9ab51566023bb6, type: 2}
+  secretMat: {fileID: 2100000, guid: e9859f965c39c7e4ead1bfa574c0dfcb, type: 2}
+  startMat: {fileID: 2100000, guid: 611255549c656a84395167b67f7d1149, type: 2}
+--- !u!114 &3768513564749259212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677488983599678177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2acf0adf62718e4199b68a60cb21ee5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.OutlineControl
+  ID: 0
+  UseRandomUID: 1
+  UseRootUID: 0
+  UseRootColor: 1
+  OverrideColor: 1
+  Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &6754758934245854558
 GameObject:
   m_ObjectHideFlags: 0
@@ -138,6 +163,7 @@ GameObject:
   - component: {fileID: 3963971789004625331}
   - component: {fileID: 8434420909456805961}
   - component: {fileID: 1420161328920610108}
+  - component: {fileID: 4426078222668531533}
   m_Layer: 19
   m_Name: Arch
   m_TagString: Untagged
@@ -1151,7 +1177,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 334cc750de9a38347a7a92e18bbb5249, type: 2}
+  - {fileID: 2100000, guid: 06fdadbc6a842a543950a9683848d860, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1204,6 +1230,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &4426078222668531533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6754758934245854558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2acf0adf62718e4199b68a60cb21ee5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.OutlineControl
+  ID: 0
+  UseRandomUID: 1
+  UseRootUID: 0
+  UseRootColor: 1
+  OverrideColor: 1
+  Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &7385880390675237224
 GameObject:
   m_ObjectHideFlags: 0

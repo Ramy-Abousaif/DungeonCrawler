@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class DungeonGenerator : MonoBehaviour
 {
+    public float tileSize = 1f;
     public int targetRoomCount = 12;
 
     [Header("Special Room Weights")]
@@ -74,6 +75,7 @@ public class DungeonGenerator : MonoBehaviour
 
         AssignSpecialRooms();
         SpawnRooms();
+        GenerateBorderWalls();
         navMeshSurface.RemoveData();
         navMeshSurface.BuildNavMesh();
         FindFirstObjectByType<SpawnNodeManager>().Initialize();
@@ -81,8 +83,8 @@ public class DungeonGenerator : MonoBehaviour
 
     void SpawnRooms()
     {
-        float roomWidthWorld  = roomTemplate.width  * roomTemplate.tileSize;
-        float roomLengthWorld = roomTemplate.length * roomTemplate.tileSize;
+        float roomWidthWorld  = roomTemplate.width  * tileSize;
+        float roomLengthWorld = roomTemplate.length * tileSize;
 
         foreach (var room in rooms.Values)
         {
@@ -128,16 +130,28 @@ public class DungeonGenerator : MonoBehaviour
             trigger.transform.position = roomObj.transform.position;
 
             RoomGenerator generator = roomObj.GetComponent<RoomGenerator>();
-            generator.GenerateRoom(room);
+            generator.GenerateRoom(room, tileSize);
 
             BoxCollider col = triggerChild.AddComponent<BoxCollider>();
             col.isTrigger = true;
 
-            var size = new Vector3(generator.width * generator.tileSize, generator.height * generator.tileSize, generator.length * generator.tileSize);
+            var size = new Vector3(generator.width * tileSize, generator.height * tileSize, generator.length * tileSize);
             col.center = size / 2;
             col.size = new Vector3(size.x - roomVisibilityTriggerPadding, size.y, size.z - roomVisibilityTriggerPadding);
 
             roomObj.AddComponent<RoomVisualController>();
+        }
+    }
+
+    void GenerateBorderWalls()
+    {
+        foreach (var room in rooms.Values)
+        {
+            RoomGenerator generator = room.spawnedObject.GetComponent<RoomGenerator>();
+            if (generator != null)
+            {
+                generator.GenerateBorderWalls(room, tileSize, rooms);
+            }
         }
     }
 
@@ -353,8 +367,8 @@ public class DungeonGenerator : MonoBehaviour
 
         foreach (var room in rooms.Values)
         {
-            float roomWidthWorld  = roomTemplate.width  * roomTemplate.tileSize;
-            float roomLengthWorld = roomTemplate.length * roomTemplate.tileSize;
+            float roomWidthWorld  = roomTemplate.width  * tileSize;
+            float roomLengthWorld = roomTemplate.length * tileSize;
 
             Vector3 pos = new Vector3(
                 room.gridPosition.x * roomWidthWorld + roomWidthWorld * 0.5f,
