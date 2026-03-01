@@ -1,5 +1,16 @@
 using UnityEngine;
 
+/// <summary>
+/// Interface for abilities that support continuous fire/hold mechanics.
+/// Emitters implementing this can respond to player input being held and released.
+/// </summary>
+public interface IHoldableAbility
+{
+    void OnHoldStart(Abilities.Ability ability);
+    void OnHoldEnd();
+    bool IsHoldable { get; }
+}
+
 public abstract class AbilityEmitter : MonoBehaviour
 {
     public AbilityType supportedType;

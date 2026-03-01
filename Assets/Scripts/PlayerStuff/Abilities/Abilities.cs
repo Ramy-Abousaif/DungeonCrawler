@@ -55,6 +55,12 @@ public class Abilities : MonoBehaviour
         public bool stunnable = false;
         public float stunDuration = 0f;
 
+        [Header("Ability Behavior")]
+        [Tooltip("If true, ability goes on cooldown immediately when fired. Otherwise waits for animation end.")]
+        public bool startCooldownOnFire = false;
+        [Tooltip("If true, ability can fire without waiting for current ability to finish.")]
+        public bool isInstantCast = false;
+
         [HideInInspector] public float cooldownTimer = 0f;
         [HideInInspector] public AnimationClip clip = null;
         [HideInInspector] public bool isPlaying = false;
@@ -116,9 +122,6 @@ public class Abilities : MonoBehaviour
             _currentForm.abilities[i].currentAbilityDamage = _currentForm.abilities[i].baseAbilityDamage;
             _currentForm.abilities[i].cooldownTimer = 0.0f;
             controller.Anim.SetFloat("AbilitySpeed" + (i + 1), _currentForm.abilities[i].currentAbilitySpeed);
-
-            if (!string.IsNullOrEmpty(_currentForm.abilities[i].stateName) && anim != null)
-                _currentForm.abilities[i].clip = FindAnimation(_currentForm.abilities[i].stateName);
         }
     }
 
@@ -129,6 +132,9 @@ public class Abilities : MonoBehaviour
 
         UIManager.Instance.SetupAbilityIcons(i, _currentForm.abilities[i].cooldownTimer, _currentForm.abilities[i].icon);
 
+        if (!string.IsNullOrEmpty(_currentForm.abilities[i].stateName) && anim != null)
+            _currentForm.abilities[i].clip = FindAnimation(_currentForm.abilities[i].stateName);
+
         foreach (var e in emitters)
         {
             if (e.Matches(ability.abilityType, i))
@@ -137,8 +143,6 @@ public class Abilities : MonoBehaviour
                 return;
             }
         }
-
-
 
         Debug.LogWarning(
             $"No emitter found for ability index {i} ({ability.abilityType}) in form {_currentForm.name}"
@@ -352,15 +356,18 @@ public class Abilities : MonoBehaviour
             }
         }
 
-        if (_attackHeld)
+        // Holdable/continuous abilities: fire while held
+        if (_attackHeld && abilities[0].abilityEmitter is IHoldableAbility holdable && holdable.IsHoldable)
         {
-            var hitscanEmitter = abilities[0].abilityEmitter as HitscanEmitter;
-            hitscanEmitter?.Fire(abilities[0]);
+            holdable.OnHoldStart(abilities[0]);
         }
-        else
+        else if (!_attackHeld)
         {
-            var hitscanEmitter = abilities[0].abilityEmitter as HitscanEmitter;
-            hitscanEmitter?.StopFire();
+            // stop holding
+            if (abilities[0].abilityEmitter is IHoldableAbility holdable2)
+            {
+                holdable2.OnHoldEnd();
+            }
         }
 
         // Other abilities: update cooldowns and playing timers
@@ -376,6 +383,11 @@ public class Abilities : MonoBehaviour
 
                 if (a.isPlaying)
                 {
+                    if(a.clip != null)
+                        Debug.Log("PLAYING ANIMATION " + a.clip.name);
+
+                    anim.SetLayerWeight(a.layerIndex, 1f);
+
                     a.playTimer += dt;
                     float clipLen = (a.clip != null && anim != null) ? a.clip.length / anim.GetFloat("AbilitySpeed" + (i + 1)) : 0f;
                     if (a.playTimer >= clipLen)
@@ -383,8 +395,9 @@ public class Abilities : MonoBehaviour
                         StopAttack();
                         a.isPlaying = false;
                         a.playTimer = 0f;
-                        // start cooldown only after the animation has finished
-                        a.cooldownTimer = a.currentAbilityCooldown;
+                        // start cooldown only after the animation has finished (if not already started)
+                        if (!a.startCooldownOnFire)
+                            a.cooldownTimer = a.currentAbilityCooldown;
                         if (anim != null && anim.layerCount > a.layerIndex)
                             anim.SetLayerWeight(a.layerIndex, 0f);
                     }
@@ -443,12 +456,7 @@ public class Abilities : MonoBehaviour
             return;
         }
 
-        if ((a.abilityEmitter.supportedType == AbilityType.TRANSFORM ||
-            a.abilityEmitter.supportedType == AbilityType.BLINK ||
-            a.abilityEmitter.supportedType == AbilityType.SUMMON ||
-            a.abilityEmitter.supportedType == AbilityType.BARRIER ||
-            a.abilityEmitter.supportedType == AbilityType.AURA) &&
-            !_isAttacking)
+        if (a.isInstantCast)
         {
             if (a.cooldownTimer > 0f)
                 return;
@@ -464,9 +472,14 @@ public class Abilities : MonoBehaviour
         // For non-primary abilities: block if already playing, on cooldown, or currently attacking
         if (a.isPlaying || a.cooldownTimer > 0f || _isAttacking) return;
 
-        // start ability playback (do NOT start cooldown yet; cooldown begins after animation finishes)
+        // start ability playback (cooldown timing depends on startCooldownOnFire flag)
         a.isPlaying = true;
         a.playTimer = 0f;
+
+        // if this ability should start cooldown immediately, do so now
+        if (a.startCooldownOnFire)
+            a.cooldownTimer = a.currentAbilityCooldown;
+
         if (anim != null)
         {
             if (anim.layerCount > a.layerIndex)

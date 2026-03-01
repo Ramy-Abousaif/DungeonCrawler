@@ -33,6 +33,8 @@ MonoBehaviour:
     affectedByAttackSpeed: 1
     stunnable: 0
     stunDuration: 0
+    startCooldownOnFire: 0
+    isInstantCast: 0
     cooldownTimer: 0
     clip: {fileID: 7400000, guid: 0c9c1b5af45660b4b847909d66f7abe8, type: 2}
     isPlaying: 0
@@ -54,6 +56,8 @@ MonoBehaviour:
     affectedByAttackSpeed: 0
     stunnable: 0
     stunDuration: 0
+    startCooldownOnFire: 1
+    isInstantCast: 1
     cooldownTimer: 0
     clip: {fileID: 0}
     isPlaying: 0
@@ -61,7 +65,7 @@ MonoBehaviour:
   - stateName: Third Attack Transformed_stepped
     icon: {fileID: 21300000, guid: 4f8d06a6bc3ae294e93282d9dccc342d, type: 3}
     layerIndex: 1
-    useAnimationEvent: 0
+    useAnimationEvent: 1
     abilityType: 5
     abilityEmitter: {fileID: 0}
     baseAbilityCooldown: 10
@@ -75,8 +79,10 @@ MonoBehaviour:
     affectedByAttackSpeed: 0
     stunnable: 0
     stunDuration: 0
-    cooldownTimer: 3.9996047
-    clip: {fileID: 0}
+    startCooldownOnFire: 0
+    isInstantCast: 0
+    cooldownTimer: 2.619602
+    clip: {fileID: 7400000, guid: e015b8d11bd6d1f4fa7f95b455417fcd, type: 2}
     isPlaying: 0
     playTimer: 0
   - stateName: 
@@ -96,6 +102,8 @@ MonoBehaviour:
     affectedByAttackSpeed: 0
     stunnable: 0
     stunDuration: 0
+    startCooldownOnFire: 0
+    isInstantCast: 0
     cooldownTimer: 0
     clip: {fileID: 0}
     isPlaying: 0

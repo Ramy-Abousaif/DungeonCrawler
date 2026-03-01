@@ -8,7 +8,7 @@ public enum HitscanMode
     Continuous
 }
 
-public class HitscanEmitter : AbilityEmitter
+public class HitscanEmitter : AbilityEmitter, IHoldableAbility
 {
     [Header("Effects")]
     [SerializeField] private GameObject impactFX;
@@ -19,6 +19,19 @@ public class HitscanEmitter : AbilityEmitter
     [SerializeField] private float damageTickRate = 0.1f;
 
     public HitscanMode mode = HitscanMode.Single;
+
+    // IHoldableAbility implementation
+    public bool IsHoldable => mode == HitscanMode.Continuous;
+
+    public void OnHoldStart(Abilities.Ability ability)
+    {
+        Fire(ability);
+    }
+
+    public void OnHoldEnd()
+    {
+        StopFire();
+    }
 
     private float curveTime = 0f; // Drives VFX graph
 
