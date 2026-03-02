@@ -79,7 +79,7 @@ Material:
     - _Cull: 2
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _Fire_Bottom_Displacement: 0.004
+    - _Fire_Bottom_Displacement: 0
     - _Fire_Core_Cutoff: 0.81
     - _Fire_Y_Cutoff: 1
     - _ID: 1

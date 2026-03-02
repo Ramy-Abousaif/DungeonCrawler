@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: WitchGirlMat
+  m_Name: NurseMat
   m_Shader: {fileID: -6465566751694194690, guid: 59b2c684835b695438e86f091d9227c9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -38,7 +38,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 0ac1bb33d4a8d0d4da4c6eb73a357286, type: 3}
+        m_Texture: {fileID: 2800000, guid: 39a0a2dd5bcdb1e49adb3100943da755, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -123,7 +123,7 @@ Material:
     - _DissolveAmount: 0
     - _DissolveScale: 40
     - _DissolveWidth: 0.02
-    - _Dissolveable: 1
+    - _Dissolveable: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EdgeBevelWeight: 0
