@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +21,11 @@ public class PhysicsBasedCharacterController : Character
     private Vector3 _previousVelocity = Vector3.zero;
     private Vector2 _moveContext;
     private bool movementEnabled = true;
+
+    [Header("Player UI")]
+    [SerializeField] private Sprite mainPortrait;
+    [SerializeField] private Sprite hurtPortrait;
+    [SerializeField] private float hurtPortraitDuration = 0.3f;
 
     [Header("Other:")]
     [SerializeField] private bool _adjustInputsToCameraAngle = false;
@@ -130,6 +136,7 @@ public class PhysicsBasedCharacterController : Character
         _gravitationalForce = Physics.gravity * _rb.mass;
         // Prevent immediate auto-jump on scene start by initializing the jump-press timer
         _timeSinceJumpPressed = _jumpBuffer;
+        UIManager.Instance.UpdatePlayerPortrait(mainPortrait);
 
         StartCoroutine(CallItemUpdate());
     }
@@ -405,6 +412,16 @@ public class PhysicsBasedCharacterController : Character
         {
             camShake.ShakeCamera(2f, 2f, 0.3f);
         }
+        
+        // Switch to hurt portrait temporarily
+        StartCoroutine(ShowHurtPortrait());
+    }
+
+    private IEnumerator ShowHurtPortrait()
+    {
+        UIManager.Instance.UpdatePlayerPortrait(hurtPortrait);
+        yield return new WaitForSeconds(hurtPortraitDuration);
+        UIManager.Instance.UpdatePlayerPortrait(mainPortrait);
     }
 
     public void SetExtraJumps(int amount)

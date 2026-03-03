@@ -6,6 +6,9 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
+    [Header("Player Portrait")]
+    [SerializeField] private Image playerPortrait;
+
     [Header("Player Stats")]
     [SerializeField] private Image healthBar;
     [SerializeField] private TMP_Text healthNumber;
@@ -31,6 +34,11 @@ public class UIManager : MonoBehaviour
         float fill = 1 - NormalizeFill(currentHealth, maxHealth);
         healthBar.fillAmount = fill;
         healthNumber.text = currentHealth.ToString("N0") + "/" + maxHealth.ToString("N0");
+    }
+
+    public void UpdatePlayerPortrait(Sprite newPortrait)
+    {
+        playerPortrait.sprite = newPortrait;
     }
 
     public void SetupAbilityIcons(int i, float timer, Sprite icon)
