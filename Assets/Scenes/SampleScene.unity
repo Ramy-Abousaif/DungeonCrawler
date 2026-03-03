@@ -35786,6 +35786,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGenerator
   tileSize: 4
+  roomSpacing: 0
   targetRoomCount: 12
   treasureChance: 1
   shopChance: 1
@@ -35796,6 +35797,26 @@ MonoBehaviour:
   roomVisibilityTriggerPadding: 2
   roomConfigs:
   - width: 20
+    length: 20
+    height: 5
+    doorHeight: 3
+    doorWidth: 3
+    doorSize: {x: 2, y: 2, z: 3}
+    floorPrefab: {fileID: 8502109849496396539, guid: 739e5dd2a4c45894daa2cb1bde9ed3a6, type: 3}
+    wallPrefab: {fileID: 2566322214346239352, guid: a5189af262ff5ce499b7bfcac60f5444, type: 3}
+    doorPrefab: {fileID: 7385880390675237224, guid: c342b9a4d4cf01443900522e4dab3cb0, type: 3}
+    spawnPool: {fileID: 11400000, guid: d4326822a316f17458f7e3242dde9475, type: 2}
+  - width: 20
+    length: 40
+    height: 5
+    doorHeight: 3
+    doorWidth: 3
+    doorSize: {x: 2, y: 2, z: 3}
+    floorPrefab: {fileID: 8502109849496396539, guid: 739e5dd2a4c45894daa2cb1bde9ed3a6, type: 3}
+    wallPrefab: {fileID: 2566322214346239352, guid: a5189af262ff5ce499b7bfcac60f5444, type: 3}
+    doorPrefab: {fileID: 7385880390675237224, guid: c342b9a4d4cf01443900522e4dab3cb0, type: 3}
+    spawnPool: {fileID: 11400000, guid: d4326822a316f17458f7e3242dde9475, type: 2}
+  - width: 40
     length: 20
     height: 5
     doorHeight: 3

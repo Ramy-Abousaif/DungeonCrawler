@@ -28,4 +28,10 @@ public class WallSegment : MonoBehaviour
         
         wallMeshes.Add(renderer);
     }
+
+    // Set all renderers for the segment
+    public void SetRenderers(Renderer[] renderers)
+    {
+        wallMeshes = new List<Renderer>(renderers);
+    }
 }

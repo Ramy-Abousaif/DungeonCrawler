@@ -46,6 +46,10 @@ public class RoomVisualController : MonoBehaviour
         {
             // Get the material from the first renderer in the segment
             Renderer renderer = segment.GetComponentInChildren<Renderer>();
+            
+            // Skip this segment if no renderer is found
+            if (renderer == null)
+                continue;
 
             // Create a MaterialPropertyBlock to hold the properties
             var block = new MaterialPropertyBlock();
@@ -115,6 +119,7 @@ public class RoomVisualController : MonoBehaviour
         foreach (var segment in wallSegments)
         {
             if (segment == null) continue;
+            if (!originalWallAlphas.ContainsKey(segment)) continue; // Skip segments with no renderer
             startAlphaValues[segment] = originalWallAlphas[segment]; // Store initial alpha for each wall segment
         }
 
@@ -167,8 +172,19 @@ public class RoomVisualController : MonoBehaviour
     // Method to get current color of a wall segment's renderer
     public Color GetWallSegmentColor(WallSegment segment)
     {
-        MaterialPropertyBlock block = wallPropertyBlocks[segment];
+        // Check if this segment exists in our dictionary
+        if (!wallPropertyBlocks.TryGetValue(segment, out MaterialPropertyBlock block))
+        {
+            Debug.LogWarning($"Wall segment {segment.name} not found in wallPropertyBlocks dictionary. Ensure AssignWallSegmentsAndLights() is called first.");
+            return Color.white; // Return default color
+        }
+        
         Renderer renderer = segment.GetComponentInChildren<Renderer>();
+        if (renderer == null)
+        {
+            return Color.white; // Return default color if renderer not found
+        }
+        
         renderer.GetPropertyBlock(block);
         Color color = block.GetColor(BaseColorID);
         // if the block didn't actually have a base color yet, fall back to the material's color

@@ -383,9 +383,6 @@ public class Abilities : MonoBehaviour
 
                 if (a.isPlaying)
                 {
-                    if(a.clip != null)
-                        Debug.Log("PLAYING ANIMATION " + a.clip.name);
-
                     anim.SetLayerWeight(a.layerIndex, 1f);
 
                     a.playTimer += dt;

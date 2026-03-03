@@ -24,6 +24,8 @@ public class RoomConfig
 public class DungeonGenerator : MonoBehaviour
 {
     public float tileSize = 1f;
+    [Tooltip("Additional spacing between rooms to prevent overlaps with variable sizes (in world units)")]
+    public float roomSpacing = 0f;
     public int targetRoomCount = 12;
 
     [Header("Special Room Weights")]
@@ -45,6 +47,11 @@ public class DungeonGenerator : MonoBehaviour
 
     private Dictionary<Vector2Int, DungeonRoom> rooms =
         new Dictionary<Vector2Int, DungeonRoom>();
+
+    // Spatial grid for fast overlap queries
+    private Dictionary<Vector3Int, List<DungeonRoom>> spatialGrid = 
+        new Dictionary<Vector3Int, List<DungeonRoom>>();
+    private float spatialGridCellSize = 20f;  // Size of each grid cell in world units
 
     void Start()
     {
@@ -70,9 +77,14 @@ public class DungeonGenerator : MonoBehaviour
             startRoom.height = startConfig.height;
         }
 
+        // Calculate initial world position for start room
+        startRoom.worldPosition = Vector3.zero;
         rooms.Add(startPos, startRoom);
+        RegisterRoomInSpatialGrid(startRoom);
 
-        while (rooms.Count < targetRoomCount)
+        int failedAttempts = 0;
+
+        while (rooms.Count < targetRoomCount && failedAttempts < targetRoomCount * 10)
         {
             List<DungeonRoom> existingRooms =
                 new List<DungeonRoom>(rooms.Values);
@@ -85,36 +97,74 @@ public class DungeonGenerator : MonoBehaviour
 
             if (!rooms.ContainsKey(newPos))
             {
-                DungeonRoom newRoom = new DungeonRoom();
-                newRoom.gridPosition = newPos;
-                newRoom.roomType = RoomType.Normal;
-                newRoom.parent = randomRoom;
-                newRoom.distanceFromStart = randomRoom.distanceFromStart + 1;
-
-                // assign a random template for this new room
-                RoomConfig cfg = ChooseConfig();
-                if (cfg != null)
+                // Try different room configurations until one fits
+                bool roomPlaced = false;
+                
+                // Shuffle configs to try them in random order
+                List<RoomConfig> configsToTry = new List<RoomConfig>(roomConfigs);
+                for (int i = 0; i < configsToTry.Count; i++)
                 {
-                    newRoom.config = cfg;
-                    newRoom.width = cfg.width;
-                    newRoom.length = cfg.length;
-                    newRoom.height = cfg.height;
+                    int randomIndex = Random.Range(i, configsToTry.Count);
+                    var temp = configsToTry[i];
+                    configsToTry[i] = configsToTry[randomIndex];
+                    configsToTry[randomIndex] = temp;
                 }
 
-                ConnectRooms(randomRoom, newRoom, dir);
+                foreach (RoomConfig cfg in configsToTry)
+                {
+                    if (cfg == null) continue;
 
-                rooms.Add(newPos, newRoom);
+                    // Create temporary room with this config
+                    DungeonRoom testRoom = new DungeonRoom();
+                    testRoom.gridPosition = newPos;
+                    testRoom.roomType = RoomType.Normal;
+                    testRoom.parent = randomRoom;
+                    testRoom.distanceFromStart = randomRoom.distanceFromStart + 1;
+                    testRoom.config = cfg;
+                    testRoom.width = cfg.width;
+                    testRoom.length = cfg.length;
+                    testRoom.height = cfg.height;
+
+                    // Calculate what world position this would have
+                    Vector3 proposedWorldPos = CalculateRoomWorldPosition(randomRoom, testRoom, dir);
+                    testRoom.worldPosition = proposedWorldPos;
+
+                    // Check if this configuration would overlap with existing rooms
+                    if (!WouldRoomOverlap(testRoom))
+                    {
+                        // Success! This config fits
+                        ConnectRooms(randomRoom, testRoom, dir);
+                        rooms.Add(newPos, testRoom);
+                        RegisterRoomInSpatialGrid(testRoom);
+                        roomPlaced = true;
+                        failedAttempts = 0; // Reset failure counter
+                        break;
+                    }
+                }
+
+                if (!roomPlaced)
+                {
+                    failedAttempts++;
+                }
             }
+        }
+
+        if (rooms.Count < targetRoomCount)
+        {
+            Debug.LogWarning($"Could only place {rooms.Count}/{targetRoomCount} rooms due to size constraints. Consider using smaller/more uniform room sizes.");
         }
 
         AssignSpecialRooms();
 
-        // calculate all room world positions now that secret rooms (and any extras)
-        // have been added and have proper size data
+        // Safety net: calculate positions for any rooms that somehow don't have one
+        // (Most rooms already positioned during generation and AssignSpecialRooms)
         CalculateWorldPositions();
+        
+        // Validate no overlaps exist (should pass with size-aware generation)
+        ValidateRoomPositions();
 
         SpawnRooms();
-        GenerateBorderWalls();
+        GenerateAllWalls();
         navMeshSurface.RemoveData();
         navMeshSurface.BuildNavMesh();
 
@@ -126,7 +176,7 @@ public class DungeonGenerator : MonoBehaviour
 
     void SpawnRooms()
     {
-        foreach (var room in rooms.Values)
+        foreach (var room in GetRoomsInBuildOrder())
         {
             // use the calculated world position (takes varying sizes into account)
             Vector3 worldPos = room.worldPosition;
@@ -178,16 +228,48 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
-    void GenerateBorderWalls()
+    void GenerateAllWalls()
     {
-        foreach (var room in rooms.Values)
+        foreach (var room in GetRoomsInBuildOrder())
         {
             RoomGenerator generator = room.spawnedObject.GetComponent<RoomGenerator>();
             if (generator != null)
             {
-                generator.GenerateBorderWalls(room, tileSize, rooms);
+                generator.GenerateAllWalls(room, tileSize);
             }
         }
+    }
+
+    List<DungeonRoom> GetRoomsInBuildOrder()
+    {
+        List<DungeonRoom> orderedRooms = new List<DungeonRoom>(rooms.Values);
+
+        orderedRooms.Sort((a, b) =>
+        {
+            int areaA = a.width * a.length;
+            int areaB = b.width * b.length;
+
+            // larger footprint first
+            int areaCompare = areaB.CompareTo(areaA);
+            if (areaCompare != 0)
+                return areaCompare;
+
+            // then longer side first
+            int maxSideA = Mathf.Max(a.width, a.length);
+            int maxSideB = Mathf.Max(b.width, b.length);
+            int sideCompare = maxSideB.CompareTo(maxSideA);
+            if (sideCompare != 0)
+                return sideCompare;
+
+            // stable tie-breaker for deterministic generation
+            int xCompare = a.gridPosition.x.CompareTo(b.gridPosition.x);
+            if (xCompare != 0)
+                return xCompare;
+
+            return a.gridPosition.y.CompareTo(b.gridPosition.y);
+        });
+
+        return orderedRooms;
     }
 
     public IEnumerable<DungeonRoom> GetAllRooms()
@@ -240,78 +322,240 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
+    Vector3 CalculateRoomWorldPosition(DungeonRoom parentRoom, DungeonRoom newRoom, Vector2Int dir)
+    {
+        Vector3 offset = Vector3.zero;
+
+        if (dir == Vector2Int.up) // North
+        {
+            float xOffset = (parentRoom.width - newRoom.width) * 0.5f * tileSize;
+            offset = new Vector3(xOffset, 0, parentRoom.length * tileSize + roomSpacing);
+        }
+        else if (dir == Vector2Int.down) // South
+        {
+            float xOffset = (parentRoom.width - newRoom.width) * 0.5f * tileSize;
+            offset = new Vector3(xOffset, 0, -newRoom.length * tileSize - roomSpacing);
+        }
+        else if (dir == Vector2Int.right) // East
+        {
+            float zOffset = (parentRoom.length - newRoom.length) * 0.5f * tileSize;
+            offset = new Vector3(parentRoom.width * tileSize + roomSpacing, 0, zOffset);
+        }
+        else if (dir == Vector2Int.left) // West
+        {
+            float zOffset = (parentRoom.length - newRoom.length) * 0.5f * tileSize;
+            offset = new Vector3(-newRoom.width * tileSize - roomSpacing, 0, zOffset);
+        }
+
+        return parentRoom.worldPosition + offset;
+    }
+
+    bool WouldRoomOverlap(DungeonRoom testRoom)
+    {
+        // Get all grid cells this room occupies
+        HashSet<Vector3Int> roomCells = GetGridCellsForRoom(testRoom);
+
+        // Check only against rooms in nearby cells
+        HashSet<DungeonRoom> checkSet = new HashSet<DungeonRoom>();
+        foreach (Vector3Int cell in roomCells)
+        {
+            if (spatialGrid.TryGetValue(cell, out List<DungeonRoom> cellRooms))
+            {
+                foreach (DungeonRoom room in cellRooms)
+                {
+                    checkSet.Add(room);
+                }
+            }
+        }
+
+        Vector3 testMin = testRoom.worldPosition;
+        Vector3 testMax = new Vector3(
+            testRoom.worldPosition.x + testRoom.width * tileSize,
+            testRoom.worldPosition.y + testRoom.height * tileSize,
+            testRoom.worldPosition.z + testRoom.length * tileSize
+        );
+
+        foreach (DungeonRoom existingRoom in checkSet)
+        {
+            Vector3 existMin = existingRoom.worldPosition;
+            Vector3 existMax = new Vector3(
+                existingRoom.worldPosition.x + existingRoom.width * tileSize,
+                existingRoom.worldPosition.y + existingRoom.height * tileSize,
+                existingRoom.worldPosition.z + existingRoom.length * tileSize
+            );
+
+            // Check for overlap with small tolerance
+            const float tolerance = 0.01f;
+            bool overlapsX = testMin.x < existMax.x - tolerance && testMax.x > existMin.x + tolerance;
+            bool overlapsY = testMin.y < existMax.y - tolerance && testMax.y > existMin.y + tolerance;
+            bool overlapsZ = testMin.z < existMax.z - tolerance && testMax.z > existMin.z + tolerance;
+
+            if (overlapsX && overlapsY && overlapsZ)
+            {
+                return true; // Overlap detected
+            }
+        }
+
+        return false; // No overlaps
+    }
+
+    void RegisterRoomInSpatialGrid(DungeonRoom room)
+    {
+        HashSet<Vector3Int> cells = GetGridCellsForRoom(room);
+        foreach (Vector3Int cell in cells)
+        {
+            if (!spatialGrid.ContainsKey(cell))
+            {
+                spatialGrid[cell] = new List<DungeonRoom>();
+            }
+            spatialGrid[cell].Add(room);
+        }
+    }
+
+    void UnregisterRoomFromSpatialGrid(DungeonRoom room)
+    {
+        HashSet<Vector3Int> cells = GetGridCellsForRoom(room);
+        foreach (Vector3Int cell in cells)
+        {
+            if (spatialGrid.TryGetValue(cell, out List<DungeonRoom> cellRooms))
+            {
+                cellRooms.Remove(room);
+                if (cellRooms.Count == 0)
+                {
+                    spatialGrid.Remove(cell);
+                }
+            }
+        }
+    }
+
+    HashSet<Vector3Int> GetGridCellsForRoom(DungeonRoom room)
+    {
+        HashSet<Vector3Int> cells = new HashSet<Vector3Int>();
+
+        Vector3 min = room.worldPosition;
+        Vector3 max = new Vector3(
+            room.worldPosition.x + room.width * tileSize,
+            room.worldPosition.y + room.height * tileSize,
+            room.worldPosition.z + room.length * tileSize
+        );
+
+        int minCellX = Mathf.FloorToInt(min.x / spatialGridCellSize);
+        int maxCellX = Mathf.FloorToInt(max.x / spatialGridCellSize);
+        int minCellY = Mathf.FloorToInt(min.y / spatialGridCellSize);
+        int maxCellY = Mathf.FloorToInt(max.y / spatialGridCellSize);
+        int minCellZ = Mathf.FloorToInt(min.z / spatialGridCellSize);
+        int maxCellZ = Mathf.FloorToInt(max.z / spatialGridCellSize);
+
+        for (int x = minCellX; x <= maxCellX; x++)
+        {
+            for (int y = minCellY; y <= maxCellY; y++)
+            {
+                for (int z = minCellZ; z <= maxCellZ; z++)
+                {
+                    cells.Add(new Vector3Int(x, y, z));
+                }
+            }
+        }
+
+        return cells;
+    }
+
     void CalculateWorldPositions()
     {
         if (rooms.Count == 0)
             return;
 
-        // anchor start room at origin if possible
-        DungeonRoom start;
-        if (!rooms.TryGetValue(Vector2Int.zero, out start))
-            start = new List<DungeonRoom>(rooms.Values)[0];
+        HashSet<DungeonRoom> unpositionedRooms = new HashSet<DungeonRoom>();
 
-        // initialize positions (necessary for neighbors to reference)
-        foreach (var r in rooms.Values)
-            r.worldPosition = Vector3.zero;
-        start.worldPosition = Vector3.zero;
-
-        bool changed = true;
-        int iterations = 0;
-        int maxIterations = rooms.Count * 10;
-
-        while (changed && iterations < maxIterations)
+        foreach (var room in rooms.Values)
         {
-            iterations++;
-            changed = false;
-
-            // keep anchor locked
-            start.worldPosition = Vector3.zero;
-
-            foreach (var room in rooms.Values)
+            // Check if room has a position set
+            // Note: Start room at origin is valid, non-start rooms at origin might indicate missing positioning
+            bool hasNoPosition = room.worldPosition.sqrMagnitude < 0.001f && room.roomType != RoomType.Start;
+            
+            if (hasNoPosition)
             {
-                Vector3 sum = Vector3.zero;
-                int count = 0;
+                unpositionedRooms.Add(room);
+            }
+        }
 
-                // for each neighbor compute where *this* room should be relative to them
-                if (room.north.exists && room.north.neighbor != null)
+        if (unpositionedRooms.Count > 0)
+        {
+            Debug.LogError($"Found {unpositionedRooms.Count} rooms without world positions after generation. This indicates a bug in size-aware positioning.");
+            
+            // Attempt emergency positioning for these rooms
+            foreach (var room in unpositionedRooms)
+            {
+                // Try to position based on any connected neighbor
+                if (room.north.neighbor != null && room.north.neighbor.worldPosition.sqrMagnitude > 0.001f)
                 {
-                    float offset = (room.length * tileSize + room.north.neighbor.length * tileSize) * 0.5f;
-                    Vector3 candidate = room.north.neighbor.worldPosition - Vector3.forward * offset;
-                    sum += candidate;
-                    count++;
+                    room.worldPosition = CalculateRoomWorldPosition(room.north.neighbor, room, Vector2Int.down);
                 }
-                if (room.south.exists && room.south.neighbor != null)
+                else if (room.south.neighbor != null && room.south.neighbor.worldPosition.sqrMagnitude > 0.001f)
                 {
-                    float offset = (room.length * tileSize + room.south.neighbor.length * tileSize) * 0.5f;
-                    Vector3 candidate = room.south.neighbor.worldPosition - Vector3.back * offset; // back = -forward
-                    sum += candidate;
-                    count++;
+                    room.worldPosition = CalculateRoomWorldPosition(room.south.neighbor, room, Vector2Int.up);
                 }
-                if (room.east.exists && room.east.neighbor != null)
+                else if (room.east.neighbor != null && room.east.neighbor.worldPosition.sqrMagnitude > 0.001f)
                 {
-                    float offset = (room.width * tileSize + room.east.neighbor.width * tileSize) * 0.5f;
-                    Vector3 candidate = room.east.neighbor.worldPosition - Vector3.right * offset;
-                    sum += candidate;
-                    count++;
+                    room.worldPosition = CalculateRoomWorldPosition(room.east.neighbor, room, Vector2Int.left);
                 }
-                if (room.west.exists && room.west.neighbor != null)
+                else if (room.west.neighbor != null && room.west.neighbor.worldPosition.sqrMagnitude > 0.001f)
                 {
-                    float offset = (room.width * tileSize + room.west.neighbor.width * tileSize) * 0.5f;
-                    Vector3 candidate = room.west.neighbor.worldPosition - Vector3.left * offset; // left = -right
-                    sum += candidate;
-                    count++;
-                }
-
-                if (count > 0)
-                {
-                    Vector3 desired = sum / count;
-                    if ((room.worldPosition - desired).sqrMagnitude > 0.0001f)
-                    {
-                        room.worldPosition = desired;
-                        changed = true;
-                    }
+                    room.worldPosition = CalculateRoomWorldPosition(room.west.neighbor, room, Vector2Int.right);
                 }
             }
+        }
+    }
+
+    void ValidateRoomPositions()
+    {
+        List<DungeonRoom> roomList = new List<DungeonRoom>(rooms.Values);
+        int overlapCount = 0;
+
+        for (int i = 0; i < roomList.Count; i++)
+        {
+            for (int j = i + 1; j < roomList.Count; j++)
+            {
+                DungeonRoom roomA = roomList[i];
+                DungeonRoom roomB = roomList[j];
+
+                // Calculate bounding boxes in world space
+                Vector3 aMin = roomA.worldPosition;
+                Vector3 aMax = new Vector3(
+                    roomA.worldPosition.x + roomA.width * tileSize,
+                    roomA.worldPosition.y + roomA.height * tileSize,
+                    roomA.worldPosition.z + roomA.length * tileSize
+                );
+
+                Vector3 bMin = roomB.worldPosition;
+                Vector3 bMax = new Vector3(
+                    roomB.worldPosition.x + roomB.width * tileSize,
+                    roomB.worldPosition.y + roomB.height * tileSize,
+                    roomB.worldPosition.z + roomB.length * tileSize
+                );
+
+                // Check for overlap (with small tolerance for edge-touching)
+                const float tolerance = 0.01f;
+                bool overlapsX = aMin.x < bMax.x - tolerance && aMax.x > bMin.x + tolerance;
+                bool overlapsY = aMin.y < bMax.y - tolerance && aMax.y > bMin.y + tolerance;
+                bool overlapsZ = aMin.z < bMax.z - tolerance && aMax.z > bMin.z + tolerance;
+
+                if (overlapsX && overlapsY && overlapsZ)
+                {
+                    overlapCount++;
+                    Debug.LogError(
+                        $"UNEXPECTED: Room overlap detected after validation! {roomA.roomType} at {roomA.gridPosition} " +
+                        $"({roomA.width}x{roomA.length}) overlaps with {roomB.roomType} at {roomB.gridPosition} " +
+                        $"({roomB.width}x{roomB.length}). This should not happen with size-aware generation. " +
+                        $"Please report this as a bug."
+                    );
+                }
+            }
+        }
+
+        if (overlapCount == 0)
+        {
+            // Validation passed
         }
     }
 
@@ -393,7 +637,6 @@ public class DungeonGenerator : MonoBehaviour
 
         bossRoom.roomType = RoomType.Boss;
         MarkMainPath(bossRoom);
-        LockEntranceToRoom(bossRoom);
 
         int treasureCount = 0;
         int shopCount = 0;
@@ -415,6 +658,7 @@ public class DungeonGenerator : MonoBehaviour
                 if (treasureCount < maxTreasureRooms && roll < treasureChance)
                 {
                     room.roomType = RoomType.Treasure;
+                    LockEntranceToRoom(room);
                     treasureCount++;
                     continue;
                 }
@@ -422,6 +666,7 @@ public class DungeonGenerator : MonoBehaviour
                 if (shopCount < maxShopRooms && roll < shopChance)
                 {
                     room.roomType = RoomType.Shop;
+                    LockEntranceToRoom(room);
                     shopCount++;
                     continue;
                 }
@@ -444,36 +689,74 @@ public class DungeonGenerator : MonoBehaviour
         {
             Vector2Int chosen = secretSpots[Random.Range(0, secretSpots.Count)];
 
-            DungeonRoom secretRoom = new DungeonRoom();
-            secretRoom.gridPosition = chosen;
-            secretRoom.roomType = RoomType.Secret;
+            // Find adjacent rooms to this secret spot
+            List<(DungeonRoom neighbour, Vector2Int dirFromSecret)> adjacent =
+                new List<(DungeonRoom, Vector2Int)>();
 
-            // choose a configuration for the secret room as well
-            RoomConfig cfg = ChooseConfig();
-            if (cfg != null)
-            {
-                secretRoom.config = cfg;
-                secretRoom.width = cfg.width;
-                secretRoom.length = cfg.length;
-                secretRoom.height = cfg.height;
-            }
-
-            // connect secret room to every adjacent existing room
-            // this ensures each shared wall becomes a "secret wall" when
-            // either side is a secret room (handled in RoomGenerator)
             foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
             {
                 Vector2Int neighborPos = chosen + dir;
                 if (rooms.TryGetValue(neighborPos, out DungeonRoom neighbour))
-                {
-                    // dir points from the secret position to the neighbour, but
-                    // ConnectRooms expects a -> b direction so we reverse it.
-                    ConnectRooms(neighbour, secretRoom, dir * -1);
-                    // continue looping to attach to any other neighbours as well
-                }
+                    adjacent.Add((neighbour, dir));
             }
 
-            rooms.Add(chosen, secretRoom);
+            if (adjacent.Count > 0)
+            {
+                // Pick a random adjacent room to connect to
+                var selected = adjacent[Random.Range(0, adjacent.Count)];
+                DungeonRoom neighbour = selected.neighbour;
+                Vector2Int dirFromSecret = selected.dirFromSecret;
+
+                // Try different configs until we find one that doesn't overlap
+                bool secretRoomPlaced = false;
+                List<RoomConfig> configsToTry = new List<RoomConfig>(roomConfigs);
+                
+                // Shuffle configs
+                for (int i = 0; i < configsToTry.Count; i++)
+                {
+                    int randomIndex = Random.Range(i, configsToTry.Count);
+                    var temp = configsToTry[i];
+                    configsToTry[i] = configsToTry[randomIndex];
+                    configsToTry[randomIndex] = temp;
+                }
+
+                foreach (RoomConfig cfg in configsToTry)
+                {
+                    if (cfg == null) continue;
+
+                    DungeonRoom secretRoom = new DungeonRoom();
+                    secretRoom.gridPosition = chosen;
+                    secretRoom.roomType = RoomType.Secret;
+                    secretRoom.config = cfg;
+                    secretRoom.width = cfg.width;
+                    secretRoom.length = cfg.length;
+                    secretRoom.height = cfg.height;
+                    secretRoom.parent = neighbour;
+                    secretRoom.distanceFromStart = neighbour.distanceFromStart + 1;
+
+                    // Calculate world position for this secret room
+                    // dirFromSecret points from secret to neighbor, so reverse it for positioning
+                    Vector3 proposedWorldPos = CalculateRoomWorldPosition(neighbour, secretRoom, dirFromSecret * -1);
+                    secretRoom.worldPosition = proposedWorldPos;
+
+                    // Check if this configuration would overlap
+                    if (!WouldRoomOverlap(secretRoom))
+                    {
+                        // Success! This config fits
+                        // Connect: neighbour -> secretRoom (reverse direction)
+                        ConnectRooms(neighbour, secretRoom, dirFromSecret * -1);
+                        rooms.Add(chosen, secretRoom);
+                        RegisterRoomInSpatialGrid(secretRoom);
+                        secretRoomPlaced = true;
+                        break;
+                    }
+                }
+
+                if (!secretRoomPlaced)
+                {
+                    Debug.LogWarning($"Could not place secret room at {chosen} - all configurations would overlap with existing rooms.");
+                }
+            }
         }
     }
 
