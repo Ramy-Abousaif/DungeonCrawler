@@ -171,7 +171,7 @@ public class DungeonGenerator : MonoBehaviour
         // move the player into the start room now that we know its world position
         PositionPlayerAtStart();
 
-        FindFirstObjectByType<SpawnNodeManager>().Initialize();
+        // FindFirstObjectByType<SpawnNodeManager>().Initialize();
     }
 
     void SpawnRooms()

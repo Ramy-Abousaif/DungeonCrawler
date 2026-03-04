@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class RoomCombatController : MonoBehaviour
 {
@@ -11,12 +12,12 @@ public class RoomCombatController : MonoBehaviour
     private int aliveEnemies = 0;
 
     private DungeonRoom dungeonRoom;
-    private SpawnNodeManager nodeManager;
+    private float tileSize;
 
     public void Initialize(DungeonRoom room)
     {
         dungeonRoom = room;
-        nodeManager = FindFirstObjectByType<SpawnNodeManager>();
+        tileSize = FindFirstObjectByType<DungeonGenerator>().tileSize;
     }
 
     public void StartCombat()
@@ -58,15 +59,57 @@ public class RoomCombatController : MonoBehaviour
 
     void SpawnEnemy(SpawnCard card)
     {
-        SpawnNode node = nodeManager.GetValidNodeInRoom(card, dungeonRoom);
-        if (node == null) return;
+        Vector3 spawnPos = FindValidSpawnPosition(card);
+        if (spawnPos == Vector3.zero) 
+        {
+            Debug.LogWarning($"Could not find valid spawn position for {card.prefab.name}");
+            return;
+        }
 
-        GameObject enemy = Instantiate(card.prefab, node.position, Quaternion.identity);
+        GameObject enemy = Instantiate(card.prefab, spawnPos, Quaternion.identity);
 
         aliveEnemies++;
 
         Enemy enemyComponent = enemy.GetComponent<Enemy>();
         enemyComponent.OnDeath += HandleEnemyDeath;
+    }
+
+    Vector3 FindValidSpawnPosition(SpawnCard card, int maxAttempts = 20)
+    {
+        // Calculate actual room center (pivot is at edge, not center)
+        Vector3 roomPivot = dungeonRoom.spawnedObject.transform.position;
+        float roomWidth = dungeonRoom.width * tileSize;
+        float roomLength = dungeonRoom.length * tileSize;
+        Vector3 roomCenter = roomPivot + new Vector3(roomWidth * 0.5f, 0, roomLength * 0.5f);
+        
+        float halfWidth = (roomWidth * 0.5f) - 2f;  // Shrink bounds slightly for safety
+        float halfLength = (roomLength * 0.5f) - 2f;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            // Random position within room bounds
+            float randomX = Random.Range(-halfWidth, halfWidth);
+            float randomZ = Random.Range(-halfLength, halfLength);
+            Vector3 candidate = roomCenter + new Vector3(randomX, 0, randomZ);
+
+            // Try to find valid NavMesh position near candidate
+            if (NavMesh.SamplePosition(candidate, out var hit, 5f, NavMesh.AllAreas))
+            {
+                // Verify the NavMesh position is still within room bounds
+                if (IsPositionInRoom(hit.position, roomCenter, halfWidth, halfLength))
+                {
+                    return hit.position;
+                }
+            }
+        }
+
+        return Vector3.zero;
+    }
+
+    bool IsPositionInRoom(Vector3 position, Vector3 roomCenter, float halfWidth, float halfLength)
+    {
+        return Mathf.Abs(position.x - roomCenter.x) <= halfWidth &&
+               Mathf.Abs(position.z - roomCenter.z) <= halfLength;
     }
 
     void HandleEnemyDeath()
