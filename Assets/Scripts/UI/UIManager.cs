@@ -13,6 +13,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image healthBar;
     [SerializeField] private TMP_Text healthNumber;
 
+    [Header("Shop UI")]
+    [SerializeField] private Image blackScreen;
+    [SerializeField] private GameObject shopUI;
+
     [Header("Abilities")]
     [SerializeField] private Image[] abilityBGIcons;
     [SerializeField] private Image[] abilityIcons;
@@ -65,6 +69,11 @@ public class UIManager : MonoBehaviour
         abilityCDTexts[index].text = timer.ToString("N1");
     }
 
+    public void ToggleShopUI(bool isActive)
+    {
+        shopUI.SetActive(isActive);
+    }
+
     public static float NormalizeFill(float currentFill, float fillMax)
     {
         if (fillMax <= 0f)
@@ -72,4 +81,6 @@ public class UIManager : MonoBehaviour
 
         return Mathf.Clamp01(1f - (currentFill / fillMax));
     }
+
+    public Image BlackScreen => blackScreen;
 }

@@ -11,8 +11,7 @@ public class TestHitbox : MonoBehaviour
 
     [SerializeField] private float delay = 3f;
     [SerializeField] private TestTriggerBox type;
-    [SerializeField] private Items itemPickupType;
-    private ItemPickup itemPickup;
+    [SerializeField] private ItemData itemToGive;
     private float timer = 0f;
 
     private void OnTriggerStay(Collider other)
@@ -68,24 +67,35 @@ public class TestHitbox : MonoBehaviour
                 if(other.CompareTag("Player"))
                 {
                     PhysicsBasedCharacterController player = other.GetComponent<PhysicsBasedCharacterController>();
-                    if(player != null)
+                    if(player != null && itemToGive != null)
                     {
-                        if(itemPickup == null)
+                        // Add item to player
+                        foreach (ItemList itemSlot in player.items)
                         {
-                            itemPickup = gameObject.AddComponent<ItemPickup>();                            
-                        }
-                        itemPickup.itemDrop = itemPickupType;
-                        itemPickup.item = itemPickup.AssignItem(itemPickup.itemDrop);
-                        itemPickup.AddItem(player);
-                        player.ShowCustomText(itemPickup.item.GiveName(), Color.white);
-                        foreach (ItemList il in player.items)
-                        {
-                            if (il.name == itemPickup.item.GiveName())
+                            if (itemSlot.GetName() == itemToGive.ItemName)
                             {
-                                il.item.OnPickup(player, il.stacks);
-                                break;
+                                // Stack item
+                                if (itemToGive.CanStack)
+                                {
+                                    itemSlot.stacks = Mathf.Min(itemSlot.stacks + 1, itemToGive.MaxStacks);
+                                    itemSlot.item.ApplyPickupEffects(player);
+                                    player.ShowCustomText(itemToGive.ItemName, Color.white);
+                                    timer = 0f;
+                                    return;
+                                }
+                                else
+                                {
+                                    timer = 0f;
+                                    return;
+                                }
                             }
                         }
+
+                        // Add as new item
+                        ItemList newItemSlot = new ItemList(itemToGive, 1);
+                        player.items.Add(newItemSlot);
+                        newItemSlot.item.ApplyPickupEffects(player);
+                        player.ShowCustomText(itemToGive.ItemName, Color.white);
                     }
                 }
                 break;

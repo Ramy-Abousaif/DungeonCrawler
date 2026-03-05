@@ -5,7 +5,6 @@ public class Loot : Interactable
 {
     private bool isOpened = false;
     public GameObject placeholderEffect;
-    public GameObject[] possibleLootItems;
     
     [Header("Launch Settings")]
     [Tooltip("Height of the arc peak")]
@@ -39,9 +38,18 @@ public class Loot : Interactable
         PoolManager.Instance.Spawn(placeholderEffect, transform.position, Quaternion.identity);
         yield return new WaitForSeconds(0.5f);
         
+        ItemPickup randomItemPrefab = ItemManager.Instance.GetRandomPickupPrefab();
+        
+        if (randomItemPrefab == null)
+        {
+            Debug.LogError("No items available in ItemManager!");
+            Destroy(gameObject);
+            yield break;
+        }
+        
         GameObject lootItem = Instantiate(
-            possibleLootItems[Random.Range(0, possibleLootItems.Length)], 
-            transform.position + Vector3.up * spawnHeight, 
+            randomItemPrefab.gameObject,
+            transform.position + Vector3.up * spawnHeight,
             Quaternion.identity
         );
         

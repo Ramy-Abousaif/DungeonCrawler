@@ -1,82 +1,58 @@
 using UnityEngine;
 
-public class ItemPickup: Interactable
+public class ItemPickup : Interactable
 {
-    public Item item;
-    public Items itemDrop;
+    [SerializeField] private ItemData itemData;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Start()
     {
-        item = AssignItem(itemDrop);
+        if (itemData == null)
+        {
+            Debug.LogWarning("ItemPickup has no ItemData assigned!", gameObject);
+            Destroy(gameObject);
+        }
     }
 
     public override void OnInteract(PhysicsBasedCharacterController player)
     {
-        PhysicsBasedCharacterController p = player.GetComponent<PhysicsBasedCharacterController>();
-        AddItem(p);
-        // Call OnPickup only for the item that was just added/updated,
-        // instead of calling all items' OnPickup (which would re-apply other items).
-        foreach (ItemList il in p.items)
+        AddItemToPlayer(player);
+        Destroy(gameObject);
+    }
+
+    private void AddItemToPlayer(PhysicsBasedCharacterController player)
+    {
+        // Check if player already has this item
+        foreach (ItemList itemSlot in player.items)
         {
-            if (il.name == item.GiveName())
+            if (itemSlot.GetName() == itemData.ItemName)
             {
-                il.item.OnPickup(p, il.stacks);
-                break;
+                // Stack item
+                if (itemData.CanStack)
+                {
+                    itemSlot.stacks = Mathf.Min(itemSlot.stacks + 1, itemData.MaxStacks);
+                    itemSlot.item.ApplyPickupEffects(player);
+                    return;
+                }
+                else
+                {
+                    // Item doesn't stack, just ignore
+                    return;
+                }
             }
         }
-        Destroy(this.gameObject);
+
+        ItemList newItemSlot = new ItemList(itemData, 1);
+        player.items.Add(newItemSlot);
+        newItemSlot.item.ApplyPickupEffects(player);
     }
 
-    public void AddItem(PhysicsBasedCharacterController player)
+    public void SetItem(ItemData data)
     {
-        foreach(ItemList i in player.items)
-        {
-            if(i.name == item.GiveName())
-            {
-                i.stacks += 1;
-                return;
-            }
-        }
-        player.items.Add(new ItemList(item, item.GiveName(), 1));
+        itemData = data;
     }
 
-    public Item AssignItem(Items itemToAssign)
+    public ItemData GetItemData()
     {
-        switch (itemToAssign)
-        {
-            case Items.HealingItem:
-                return new HealingItem();
-            case Items.FireDamageItem:
-                return new FireDamageItem();
-            case Items.HealingAreaItem:
-                return new HealingAreaItem();
-            case Items.AttackSpeedItem:
-                return new AttackSpeedItem();
-            case Items.AttackRangeItem:
-                return new AttackRangeItem();
-            case Items.BleedItem:
-                return new BleedItem();
-            case Items.MovementSpeedItem:
-                return new MovementSpeedItem();
-            case Items.ExtraJumpItem:
-                return new ExtraJumpItem();
-            default:
-                Debug.Log("No item assigned");
-                return new BlankItem();
-        }
+        return itemData;
     }
-}
-
-public enum Items
-{
-    BlankItem,
-    HealingItem,
-    FireDamageItem,
-    HealingAreaItem,
-    AttackSpeedItem,
-    AttackRangeItem,
-    BleedItem,
-    MovementSpeedItem,
-    ExtraJumpItem
 }

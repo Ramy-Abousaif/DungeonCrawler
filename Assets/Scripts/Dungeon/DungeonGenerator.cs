@@ -53,12 +53,7 @@ public class DungeonGenerator : MonoBehaviour
         new Dictionary<Vector3Int, List<DungeonRoom>>();
     private float spatialGridCellSize = 20f;  // Size of each grid cell in world units
 
-    void Start()
-    {
-        GenerateDungeon();
-    }
-
-    void GenerateDungeon()
+    public void GenerateDungeon()
     {
         Vector2Int startPos = Vector2Int.zero;
 
@@ -167,11 +162,6 @@ public class DungeonGenerator : MonoBehaviour
         GenerateAllWalls();
         navMeshSurface.RemoveData();
         navMeshSurface.BuildNavMesh();
-
-        // move the player into the start room now that we know its world position
-        PositionPlayerAtStart();
-
-        // FindFirstObjectByType<SpawnNodeManager>().Initialize();
     }
 
     void SpawnRooms()
@@ -598,27 +588,24 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
-    void PositionPlayerAtStart()
+    public List<DungeonRoom> GetRoomsByType(RoomType type)
     {
-        
-        if (rooms.TryGetValue(Vector2Int.zero, out DungeonRoom start))
+        List<DungeonRoom> matchingRooms = new List<DungeonRoom>();
+        foreach (var room in rooms.Values)
         {
-            GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
+            if (room.roomType == type)
             {
-                // center on floor, preserve current y position or bump slightly above floor
-                Vector3 offset = new Vector3(start.width * tileSize * 0.5f,
-                                             0f,
-                                             start.length * tileSize * 0.5f);
-                Vector3 newPos = start.worldPosition + offset;
-                // keep existing Y if above zero, otherwise set to 1
-                if (playerObj.transform.position.y > 0f)
-                    newPos.y = playerObj.transform.position.y;
-                else
-                    newPos.y = 1f;
-                playerObj.transform.position = newPos;
+                matchingRooms.Add(room);
             }
         }
+
+        if(matchingRooms.Count == 0)
+        {
+            Debug.LogWarning($"No rooms of type {type} found in dungeon.");
+            return null;
+        }
+
+        return matchingRooms;
     }
 
     void AssignSpecialRooms()

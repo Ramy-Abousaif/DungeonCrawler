@@ -1,238 +1,86 @@
 using UnityEngine;
 
+/// <summary>
+/// Instance of an item that the player has. Holds reference to ItemData and stack count.
+/// This is much simpler now that effects are data-driven.
+/// </summary>
 [System.Serializable]
-public abstract class Item
+public class Item
 {
-    public abstract string GiveName();
+    public ItemData data;
+    [SerializeField] private int stacks = 1;
+    public int Stacks => stacks;
 
-    public abstract string GiveDescription();
-
-    public virtual void Update(PhysicsBasedCharacterController player, int stacks)
+    public Item(ItemData itemData, int stackCount = 1)
     {
-        
+        data = itemData;
+        SetStacks(stackCount);
     }
 
-    public virtual void OnHit(PhysicsBasedCharacterController player, Enemy enemy, int stacks)
+    public void SetStacks(int stackCount)
     {
-        
-    }
-
-    public virtual void OnJump(PhysicsBasedCharacterController player, int stacks)
-    {
-        
-    }
-
-    public virtual void OnPickup(PhysicsBasedCharacterController player, int stacks)
-    {
-        
-    }
-}
-
-public class BlankItem : Item
-{
-    public override string GiveName()
-    {
-        return "Blank Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "This is a blank item with no effects.";
-    }
-}
-
-public class HealingItem : Item
-{
-    public override string GiveName()
-    {
-        return "Healing Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "Heals the player over time.";
-    }
-
-    public override void Update(PhysicsBasedCharacterController player, int stacks)
-    {
-        player.Heal(3 * (2 + stacks));
-    }
-}
-
-public class FireDamageItem : Item
-{
-    public override string GiveName()
-    {
-        return "Fire Damage Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "Deals extra damage on hit.";
-    }
-
-    public override void OnPickup(PhysicsBasedCharacterController player, int stacks)
-    {
-        for (int i = 0; i < player.abilities.abilities.Length; i++)
+        if (data == null)
         {
-            player.abilities.abilities[i].currentAbilityDamage = player.abilities.abilities[i].baseAbilityDamage + (10f * stacks);
+            stacks = Mathf.Max(0, stackCount);
+            return;
         }
-    }
-}
 
-public class HealingAreaItem: Item
-{
-    private float internalCooldown;
-    private GameObject effect;
-    public override string GiveName()
-    {
-        return "Healing Area Item";
+        stacks = Mathf.Clamp(stackCount, 1, Mathf.Max(1, data.MaxStacks));
     }
 
-    public override string GiveDescription()
+    public void AddStacks(int amount = 1)
     {
-        return "Creates a healing area upon jumping.";
+        SetStacks(stacks + amount);
     }
 
-    public override void Update(PhysicsBasedCharacterController player, int stacks)
+    public string GetName() => data.ItemName;
+    public string GetDescription() => data.Description;
+    public ItemRarity GetRarity() => data.Rarity;
+    public Sprite GetIcon() => data.Icon;
+
+    public void ApplyPickupEffects(PhysicsBasedCharacterController player)
     {
-        internalCooldown -= 1;
+        if (data == null)
+            return;
+
+        data.ApplyEffects(player, stacks, "Pickup");
     }
 
-    public override void OnJump(PhysicsBasedCharacterController player, int stacks)
+    public void ApplyHitEffects(PhysicsBasedCharacterController player, Enemy enemy)
     {
-        if(internalCooldown <= 0)
+        if (data == null || data.Effects == null)
+            return;
+
+        foreach (ItemEffect effect in data.Effects)
         {
-            if(effect == null) 
-                effect = (GameObject)Resources.Load("Item Effects/HealingArea", typeof(GameObject));
-            
-            PoolManager.Instance.Spawn(effect, new Vector3(player.transform.position.x, player.transform.position.y - 2, player.transform.position.z), Quaternion.Euler(Vector3.zero));
-            internalCooldown = 10;
-        }
-    }
-}
-
-public class AttackSpeedItem: Item
-{
-    public override string GiveName()
-    {
-        return "Attack Speed Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "Increases attack speed.";
-    }
-
-    public override void OnPickup(PhysicsBasedCharacterController player, int stacks)
-    {
-        for (int i = 0; i < player.abilities.abilities.Length; i++)
-        {
-            if(!player.abilities.abilities[i].affectedByAttackSpeed)
+            if (effect == null)
                 continue;
 
-            player.abilities.abilities[i].currentAbilitySpeed = player.abilities.abilities[i].baseAbilitySpeed + (1f * stacks);
-            player.Anim.SetFloat("AbilitySpeed" + (i + 1), player.abilities.abilities[i].currentAbilitySpeed);
-        }
-    }
-}
-
-public class AttackRangeItem: Item
-{
-    public override string GiveName()
-    {
-        return "Attack Range Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "Increases attack range.";
-    }
-
-    public override void OnPickup(PhysicsBasedCharacterController player, int stacks)
-    {
-        for (int i = 0; i < player.abilities.abilities.Length; i++)
-        {
-            player.abilities.abilities[i].currentAbilityRange = player.abilities.abilities[i].baseAbilityRange + (1f * stacks);
-        }
-    }
-}
-
-public class BleedItem : Item
-{
-    [SerializeField] private float duration = 5f;
-    [SerializeField] private float damagePerTick = 2f;
-    [SerializeField] private float tickInterval = 1f;
-
-    private float baseInterval = 2f;
-
-    public override string GiveName()
-    {
-        tickInterval = baseInterval;
-        return "Bleed Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "Applies bleeding on hit, dealing damage over time.";
-    }
-
-    public override void OnPickup(PhysicsBasedCharacterController player, int stacks)
-    {
-        float k = 10f;
-        float rateBonus = stacks / (stacks + k);
-
-        // increase duration and interval based on stacks if needed
-        if(stacks > 1)
-        {
-            duration += 0.5f * stacks;
-            // calculate diminished returns for tick interval reduction
-            tickInterval = baseInterval / (1f + rateBonus);
+            effect.OnHit(player, enemy, stacks);
         }
     }
 
-    public override void OnHit(PhysicsBasedCharacterController player, Enemy enemy, int stacks)
+    public void ApplyJumpEffects(PhysicsBasedCharacterController player)
     {
-        if (enemy == null) return;
+        if (data == null)
+            return;
 
-        BleedEffect bleed = new BleedEffect(damagePerTick, tickInterval);
-        enemy.ApplyStatusEffect(bleed, stacks, duration);
+        data.ApplyEffects(player, stacks, "Jump");
+    }
+
+    public void ApplyUpdateEffects(PhysicsBasedCharacterController player)
+    {
+        if (data == null)
+            return;
+
+        data.ApplyEffects(player, stacks, "Update");
     }
 }
 
-public class MovementSpeedItem: Item
-{
-    public override string GiveName()
-    {
-        return "Movement Speed Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "Increases movement speed.";
-    }
-
-    public override void OnPickup(PhysicsBasedCharacterController player, int stacks)
-    {
-        player.CurrentMaxSpeed = player.BaseMaxSpeed + (1f * stacks);
-        player.Anim.SetFloat("MovementSpeed", (player.CurrentMaxSpeed / player.BaseMaxSpeed));
-    }
-}
-
-public class ExtraJumpItem : Item
-{
-    public override string GiveName()
-    {
-        return "Extra Jump Item";
-    }
-
-    public override string GiveDescription()
-    {
-        return "Grants additional mid-air jumps.";
-    }
-
-    public override void OnPickup(PhysicsBasedCharacterController player, int stacks)
-    {
-        player.SetExtraJumps(stacks);
-    }
-}
+/// <summary>
+/// OLD CODE REMOVED - Items are now data-driven using ItemData ScriptableObjects.
+/// Create items in the inspector using Create > Items > Item Data
+/// 
+/// All item effects are defined in ItemEffect classes and can be mixed and matched
+/// on ItemData assets without writing any code.
+/// </summary>

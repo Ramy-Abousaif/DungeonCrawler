@@ -1,17 +1,28 @@
 using UnityEngine;
 
+/// <summary>
+/// Represents a single item slot in the player's inventory
+/// </summary>
 [System.Serializable]
 public class ItemList
 {
-    [SerializeReference]
     public Item item;
-    public string name;
-    public int stacks;
 
-    public ItemList(Item newItem, string newName, int newStacks)
+    public int stacks
     {
-        item = newItem;
-        name = newName;
-        stacks = newStacks;
+        get => item != null ? item.Stacks : 0;
+        set
+        {
+            if (item != null)
+                item.SetStacks(value);
+        }
     }
+
+    public ItemList(ItemData itemData, int stackCount = 1)
+    {
+        item = new Item(itemData, stackCount);
+    }
+
+    public string GetName() => item.GetName();
+    public ItemRarity GetRarity() => item.GetRarity();
 }

@@ -225,7 +225,7 @@ public class PhysicsBasedCharacterController : Character
     {
         foreach (ItemList i in items)
         {
-            i.item.Update(this, i.stacks);
+            i.item.ApplyUpdateEffects(this);
         }
         yield return new WaitForSeconds(1f);
         StartCoroutine(CallItemUpdate());
@@ -235,7 +235,7 @@ public class PhysicsBasedCharacterController : Character
     {
         foreach (ItemList i in items)
         {
-            i.item.OnJump(this, i.stacks);
+            i.item.ApplyJumpEffects(this);
         }
     }
 
@@ -243,7 +243,7 @@ public class PhysicsBasedCharacterController : Character
     {
         foreach (ItemList i in items)
         {
-            i.item.OnPickup(this, i.stacks);
+            i.item.ApplyPickupEffects(this);
         }
     }
 
@@ -251,7 +251,7 @@ public class PhysicsBasedCharacterController : Character
     {
         foreach (ItemList i in items)
         {
-            i.item.OnHit(this, enemy, i.stacks);
+            i.item.ApplyHitEffects(this, enemy);
         }
     }
 
@@ -811,5 +811,10 @@ public class PhysicsBasedCharacterController : Character
                 _timeSinceJump = 0f;
             }
         }
+    }
+
+    public bool IsGrounded()
+    {
+        return _isGrounded;
     }
 }
