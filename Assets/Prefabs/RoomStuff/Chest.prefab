@@ -134,3 +134,13 @@ MonoBehaviour:
   - {fileID: 7531635610946539402, guid: 33dad0c6409f68b4694e1a7a8124de69, type: 3}
   - {fileID: 1485342628669616613, guid: 7ae4355fe887413438e91777ae68c151, type: 3}
   - {fileID: 3142883901744620267, guid: ec4b7914840540141aae45c8b279f1c7, type: 3}
+  arcHeight: 8
+  launchDistance: 5
+  launchDuration: 0.8
+  randomSpread: 30
+  spawnHeight: 2
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 925696
+  startScaleMultiplier: 0.2
+  groundOffset: 2
