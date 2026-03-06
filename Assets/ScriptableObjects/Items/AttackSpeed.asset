@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Attack Speed Item
   description: Increases attack speed of player's primary
-  icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 21300028, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
   rarity: 0
   category: 16
-  dropChance: 1
   canStack: 1
   maxStacks: 99
+  price: 10
   effects:
   - rid: 6621977114848788577
   references:

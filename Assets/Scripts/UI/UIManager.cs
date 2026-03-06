@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     [Header("Shop UI")]
     [SerializeField] private Image blackScreen;
     [SerializeField] private GameObject shopUI;
+    [SerializeField] TMP_Text shopDialogueText;
 
     [Header("Abilities")]
     [SerializeField] private Image[] abilityBGIcons;
@@ -72,6 +73,20 @@ public class UIManager : MonoBehaviour
     public void ToggleShopUI(bool isActive)
     {
         shopUI.SetActive(isActive);
+    }
+
+    public void SetShopDialogue(string dialogue)
+    {
+        if (shopDialogueText == null)
+            return;
+
+        if (shopDialogueText.TryGetComponent(out TypewriterEffect typewriter))
+        {
+            typewriter.PlayText(dialogue);
+            return;
+        }
+
+        shopDialogueText.text = dialogue ?? string.Empty;
     }
 
     public static float NormalizeFill(float currentFill, float fillMax)

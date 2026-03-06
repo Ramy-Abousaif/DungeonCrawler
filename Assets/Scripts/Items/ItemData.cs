@@ -20,6 +20,9 @@ public class ItemData : ScriptableObject
     [SerializeField] private bool canStack = true;
     [SerializeField] private int maxStacks = 99;
 
+    [Header("Shop Settings")]
+    [SerializeField] private int price = 10;
+
     [Header("Effects")]
     [Tooltip("Inline item effects. Use the custom inspector Add Effect dropdown to create entries.")]
     [SerializeReference] private ItemEffect[] effects = new ItemEffect[0];
@@ -32,6 +35,7 @@ public class ItemData : ScriptableObject
     public bool CanStack => canStack;
     public int MaxStacks => maxStacks;
     public ItemEffect[] Effects => effects;
+    public int Price => price;
 
     public void ApplyEffects(PhysicsBasedCharacterController player, int stacks, string effectType)
     {

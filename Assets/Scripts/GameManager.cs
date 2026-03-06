@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+        player = FindFirstObjectByType<PhysicsBasedCharacterController>();
     }
 
     void Start()
@@ -28,7 +29,6 @@ public class GameManager : MonoBehaviour
 
     private void SetPlayerPosition()
     {
-        player = FindFirstObjectByType<PhysicsBasedCharacterController>();
         DungeonRoom start = dungeonGenerator.GetRoomsByType(RoomType.Start)[0];
         Vector3 offset = new Vector3(start.width * dungeonGenerator.tileSize * 0.5f,
                             2.5f,
@@ -57,4 +57,6 @@ public class GameManager : MonoBehaviour
             PoolManager.Instance.Spawn(shopkeeperPrefab, spawnPos, spawnRot);
         }
     }
+
+    public PhysicsBasedCharacterController Player => player;
 }

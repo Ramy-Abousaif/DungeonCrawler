@@ -27,6 +27,10 @@ public class PhysicsBasedCharacterController : Character
     [SerializeField] private Sprite hurtPortrait;
     [SerializeField] private float hurtPortraitDuration = 0.3f;
 
+    [Header("Character Identity")]
+    [SerializeField] private string shopDialogueCharacterId = "Default";
+    public string ShopDialogueCharacterId => shopDialogueCharacterId;
+
     [Header("Other:")]
     [SerializeField] private bool _adjustInputsToCameraAngle = false;
     [SerializeField] private LayerMask _terrainLayer;
@@ -53,6 +57,8 @@ public class PhysicsBasedCharacterController : Character
     private Quaternion _lastTargetRot;
     private Vector3 _platformInitRot;
     private bool didLastRayHit;
+    private bool _inShop = false;
+    public bool inShop { get { return _inShop; } set { _inShop = value; } }
 
     [Header("Upright Spring:")]
     [SerializeField] private lookDirectionOptions _characterLookDirection = lookDirectionOptions.velocity;

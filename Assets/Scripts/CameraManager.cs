@@ -8,6 +8,8 @@ public class CameraManager : MonoBehaviour
     public static CameraManager Instance;
 
     private bool orthoCamera = true;
+    private bool isTransitioning = false;
+    public bool IsTransitioning => isTransitioning;
     public CinemachineCamera orthoVCam;
     public CinemachineCamera shopCam;
     
@@ -23,18 +25,25 @@ public class CameraManager : MonoBehaviour
         }
 
         Instance = this;
-        
+    }
+
+    void Start()
+    {
         if (UIManager.Instance.BlackScreen != null)
             UIManager.Instance.BlackScreen.color = new Color(0f, 0f, 0f, 0f);
     }
 
     public void SwitchState(Action onFadeComplete = null)
     {
+        if (isTransitioning)
+            return;
+
         StartCoroutine(SwitchStateWithFade(onFadeComplete));
     }
 
     private IEnumerator SwitchStateWithFade(Action onFadeComplete = null)
     {
+        isTransitioning = true;
         yield return StartCoroutine(FadeIn());
 
         if(orthoCamera)
@@ -52,6 +61,7 @@ public class CameraManager : MonoBehaviour
         onFadeComplete?.Invoke();
 
         yield return StartCoroutine(FadeOut());
+        isTransitioning = false;
     }
 
     private IEnumerator FadeIn()
