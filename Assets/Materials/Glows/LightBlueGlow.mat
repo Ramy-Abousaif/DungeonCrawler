@@ -120,7 +120,7 @@ Material:
     - _DissolveAmount: 0
     - _DissolveScale: 40
     - _DissolveWidth: 0.02
-    - _Dissolveable: 1
+    - _Dissolveable: 0
     - _DistortionBlend: 0.5
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
