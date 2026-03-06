@@ -352,7 +352,7 @@ GameObject:
   - component: {fileID: 883190034647395490}
   - component: {fileID: 4762380966035365198}
   - component: {fileID: 2601943333341588016}
-  m_Layer: 9
+  m_Layer: 21
   m_Name: Description
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -744,7 +744,8 @@ GameObject:
   - component: {fileID: 1144096546727413950}
   - component: {fileID: 995062364007581017}
   - component: {fileID: 4201792184625154549}
-  m_Layer: 0
+  - component: {fileID: 2636041649388066755}
+  m_Layer: 21
   m_Name: Card3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -861,6 +862,13 @@ MonoBehaviour:
   itemData: {fileID: 0}
   titleText: {fileID: 4123718619896387252}
   descriptionText: {fileID: 2601943333341588016}
+  hoverVisual: {fileID: 2997388821125260475}
+  hoverLift: 1
+  maxTilt: 8
+  tiltScreenRange: 180
+  positionLerpSpeed: 5
+  rotationLerpSpeed: 12
+  faceRotationOffset: {x: 90, y: 0, z: 0}
 --- !u!114 &4201792184625154549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -879,6 +887,27 @@ MonoBehaviour:
   UseRootColor: 1
   OverrideColor: 1
   Color: {r: 0, g: 0, b: 0, a: 0}
+--- !u!114 &2636041649388066755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1113025874467359376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 30
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1
 --- !u!1 &1123348120982774992
 GameObject:
   m_ObjectHideFlags: 0
@@ -1492,7 +1521,8 @@ GameObject:
   - component: {fileID: 5583531019758503022}
   - component: {fileID: 8486809868484456007}
   - component: {fileID: 1720390347777039502}
-  m_Layer: 0
+  - component: {fileID: 3020045307677542417}
+  m_Layer: 21
   m_Name: Card2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1609,6 +1639,13 @@ MonoBehaviour:
   itemData: {fileID: 0}
   titleText: {fileID: 6627263681297406490}
   descriptionText: {fileID: 2012203038460814463}
+  hoverVisual: {fileID: 696388758701066530}
+  hoverLift: 1
+  maxTilt: 8
+  tiltScreenRange: 180
+  positionLerpSpeed: 5
+  rotationLerpSpeed: 12
+  faceRotationOffset: {x: 90, y: 0, z: 0}
 --- !u!114 &1720390347777039502
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1627,6 +1664,27 @@ MonoBehaviour:
   UseRootColor: 1
   OverrideColor: 1
   Color: {r: 0, g: 0, b: 0, a: 0}
+--- !u!114 &3020045307677542417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2658018856116845244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 30
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1
 --- !u!1 &2667706425071360331
 GameObject:
   m_ObjectHideFlags: 0
@@ -2029,7 +2087,7 @@ GameObject:
   - component: {fileID: 1889974213007617243}
   - component: {fileID: 5695237599120246173}
   - component: {fileID: 4123718619896387252}
-  m_Layer: 9
+  m_Layer: 21
   m_Name: Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2518,7 +2576,7 @@ GameObject:
   - component: {fileID: 8320753096088836382}
   - component: {fileID: 8912523351080183864}
   - component: {fileID: 5819990248108700388}
-  m_Layer: 9
+  m_Layer: 21
   m_Name: Description
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3174,7 +3232,7 @@ GameObject:
   - component: {fileID: 4264357655438170102}
   - component: {fileID: 758901136425500174}
   - component: {fileID: 6627263681297406490}
-  m_Layer: 9
+  m_Layer: 21
   m_Name: Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3830,7 +3888,7 @@ GameObject:
   - component: {fileID: 1420433354293291130}
   - component: {fileID: 7202653138419898723}
   - component: {fileID: 2012203038460814463}
-  m_Layer: 9
+  m_Layer: 21
   m_Name: Description
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4071,7 +4129,7 @@ GameObject:
   - component: {fileID: 6876937911012968887}
   - component: {fileID: 2025156521574449405}
   - component: {fileID: 5375323297569243418}
-  m_Layer: 9
+  m_Layer: 21
   m_Name: Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5412,7 +5470,8 @@ GameObject:
   - component: {fileID: 4357024813513966416}
   - component: {fileID: 5520210853724852335}
   - component: {fileID: 2375461789429043792}
-  m_Layer: 0
+  - component: {fileID: 2156122615226343062}
+  m_Layer: 21
   m_Name: Card1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5529,6 +5588,13 @@ MonoBehaviour:
   itemData: {fileID: 0}
   titleText: {fileID: 5375323297569243418}
   descriptionText: {fileID: 5819990248108700388}
+  hoverVisual: {fileID: 4323407296222160818}
+  hoverLift: 1
+  maxTilt: 8
+  tiltScreenRange: 180
+  positionLerpSpeed: 5
+  rotationLerpSpeed: 12
+  faceRotationOffset: {x: 90, y: 0, z: 0}
 --- !u!114 &2375461789429043792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5547,6 +5613,27 @@ MonoBehaviour:
   UseRootColor: 1
   OverrideColor: 1
   Color: {r: 0, g: 0, b: 0, a: 0}
+--- !u!114 &2156122615226343062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9144293856007804372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f2cae7a75dc1d479c03956c57c10a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProPixelizer::ProPixelizer.ObjectRenderSnapable
+  SnapPosition: 1
+  SnapEulerAngles: 1
+  SnapAngleStrategy: 0
+  angleResolution: 30
+  AlignPixelGrid: 0
+  PixelGridReference: {fileID: 0}
+  AlignmentPixelSize: 5
+  GetPixelSizeFromMaterial: 1
+  ConfigureChildren: 1
 --- !u!1 &9151660450043312896
 GameObject:
   m_ObjectHideFlags: 0

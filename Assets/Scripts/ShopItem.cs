@@ -11,10 +11,31 @@ public class ShopItem : MonoBehaviour
     public ItemData itemData;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text descriptionText;
+
+    [Header("Hover Visuals")]
+    [SerializeField] private Transform hoverVisual;
+    [SerializeField] private float hoverLift = 0.2f;
+    [SerializeField] private float maxTilt = 8f;
+    [SerializeField] private float tiltScreenRange = 180f;
+    [SerializeField] private float positionLerpSpeed = 12f;
+    [SerializeField] private float rotationLerpSpeed = 12f;
+    [SerializeField] private Vector3 faceRotationOffset;
+
     private Material mat;
     private bool isHighlighted = false;
     private Camera shopCamera;
     private PhysicsBasedCharacterController player;
+    private Vector3 baseLocalPosition;
+    private Quaternion baseLocalRotation;
+
+    private Transform HoverVisual => hoverVisual != null ? hoverVisual : transform;
+
+    private void Awake()
+    {
+        Transform visual = HoverVisual;
+        baseLocalPosition = visual.localPosition;
+        baseLocalRotation = visual.localRotation;
+    }
     
     private void Start()
     {
@@ -35,51 +56,103 @@ public class ShopItem : MonoBehaviour
     
     private void Update()
     {
-        if(!player.inShop)
+        if (player == null && GameManager.Instance != null)
+            player = GameManager.Instance.Player;
+
+        bool inShop = player != null && player.inShop;
+
+        if (!inShop)
+        {
+            if (isHighlighted)
+                SetHoveredState(false);
+
+            UpdateHoverVisual(false);
+            return;
+        }
+
+        UpdateHoverVisual(isHighlighted);
+    }
+
+    private void OnDisable()
+    {
+        if (isHighlighted)
+            SetHoveredState(false);
+
+        Transform visual = HoverVisual;
+        visual.localPosition = baseLocalPosition;
+        visual.localRotation = baseLocalRotation;
+    }
+
+    public void SetHoveredState(bool hovered)
+    {
+        if (isHighlighted == hovered)
             return;
 
-        CheckMouseHover();
-        CheckMouseClick();
-    }
-    
-    private void CheckMouseHover()
-    {
-        if (shopCamera == null) return;
-        
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = shopCamera.ScreenPointToRay(mousePos);
-        
-        bool isHovering = Physics.Raycast(ray, out RaycastHit hit) && hit.collider.gameObject == gameObject;
-        
-        if (isHovering && !isHighlighted)
+        HighlightItem(hovered);
+
+        if (hovered)
         {
-            HighlightItem(true);
             ShopTooltip.Instance?.Show(itemData);
         }
-        else if (!isHovering && isHighlighted)
+        else
         {
-            HighlightItem(false);
             ShopTooltip.Instance?.Hide();
-        }
-    }
-    
-    private void CheckMouseClick()
-    {
-        if (!isHighlighted) return;
-        
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            TryPurchaseItem();
         }
     }
     
     private void HighlightItem(bool highlight)
     {
-        mat.SetFloat("_Selected", highlight ? 1f : 0f);
+        if (mat != null)
+            mat.SetFloat("_Selected", highlight ? 1f : 0f);
+
         isHighlighted = highlight;
     }
+
+    private void UpdateHoverVisual(bool hovered)
+    {
+        Transform visual = HoverVisual;
+
+        Vector3 targetLocalPosition = baseLocalPosition;
+        Quaternion targetLocalRotation = baseLocalRotation;
+
+        if (hovered)
+        {
+            if (shopCamera == null)
+                shopCamera = Camera.main;
+
+            if (shopCamera != null)
+            {
+                targetLocalPosition += Vector3.up * hoverLift;
+
+                Vector2 mousePos = Mouse.current != null
+                    ? Mouse.current.position.ReadValue()
+                    : (Vector2)shopCamera.WorldToScreenPoint(visual.position);
+
+                Vector3 cardScreenPos = shopCamera.WorldToScreenPoint(visual.position);
+                Vector2 mouseDelta = mousePos - new Vector2(cardScreenPos.x, cardScreenPos.y);
+                float normalizedX = Mathf.Clamp(mouseDelta.x / tiltScreenRange, -1f, 1f);
+                float normalizedY = Mathf.Clamp(mouseDelta.y / tiltScreenRange, -1f, 1f);
+
+                float tiltX = -normalizedY * maxTilt;
+                float tiltY = normalizedX * maxTilt;
+
+                Vector3 toCamera = shopCamera.transform.position - visual.position;
+                if (toCamera.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion worldFaceRotation = Quaternion.LookRotation(toCamera.normalized, Vector3.up) * Quaternion.Euler(faceRotationOffset);
+                    Quaternion parentRotation = visual.parent != null ? visual.parent.rotation : Quaternion.identity;
+
+                    targetLocalRotation = Quaternion.Inverse(parentRotation) * worldFaceRotation;
+                    targetLocalRotation *= Quaternion.Euler(tiltX, tiltY, 0f);
+                }
+            }
+        }
+
+        visual.localPosition = Vector3.Lerp(visual.localPosition, targetLocalPosition, Time.deltaTime * positionLerpSpeed);
+        visual.localRotation = Quaternion.Slerp(visual.localRotation, targetLocalRotation, Time.deltaTime * rotationLerpSpeed);
+    }
     
-    private void TryPurchaseItem()
+    public void TryPurchaseItem()
     {
         int playerGold = PlayerInventory.Instance?.GetGold() ?? 0;
         

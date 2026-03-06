@@ -5043,6 +5043,7 @@ GameObject:
   - component: {fileID: 246817913}
   - component: {fileID: 246817912}
   - component: {fileID: 246817919}
+  - component: {fileID: 246817920}
   m_Layer: 0
   m_Name: MainCamera
   m_TagString: MainCamera
@@ -5260,6 +5261,25 @@ MonoBehaviour:
   TargetScale: 1
   FullscreenColorGradingLUT: {fileID: 0}
   EnableProPixelizer: 1
+--- !u!114 &246817920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 246817910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 138d39004cc0e3f408d4ace0c20ad5eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShopHoverController
+  shopCamera: {fileID: 246817917}
+  player: {fileID: 0}
+  cardLayerMask:
+    serializedVersion: 2
+    m_Bits: 2097152
+  maxDistance: 500
+  triggerInteraction: 2
 --- !u!1 &253806761
 GameObject:
   m_ObjectHideFlags: 0
@@ -19664,7 +19684,6 @@ RectTransform:
   - {fileID: 2055960120}
   - {fileID: 1965079473}
   - {fileID: 490992947}
-  - {fileID: 1676871810}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -34383,7 +34402,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1676871810
 RectTransform:
   m_ObjectHideFlags: 0
@@ -34391,7 +34410,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1676871809}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -34400,7 +34419,7 @@ RectTransform:
   - {fileID: 1511667445}
   - {fileID: 830286975}
   - {fileID: 1520499732}
-  m_Father: {fileID: 753459051}
+  m_Father: {fileID: 1965079473}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -34424,7 +34443,7 @@ MonoBehaviour:
   descriptionText: {fileID: 830286976}
   priceText: {fileID: 1520499733}
   iconImage: {fileID: 1511667446}
-  offset: {x: 20, y: -20}
+  offset: {x: 400, y: 50}
   followMouse: 1
 --- !u!114 &1676871812
 MonoBehaviour:
@@ -38910,6 +38929,7 @@ RectTransform:
   m_Children:
   - {fileID: 2064363510}
   - {fileID: 386943061}
+  - {fileID: 1676871810}
   m_Father: {fileID: 753459051}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
