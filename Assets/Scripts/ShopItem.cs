@@ -10,7 +10,6 @@ public class ShopItem : MonoBehaviour
     [Header("Item Data")]
     public ItemData itemData;
     [SerializeField] private TMP_Text titleText;
-    [SerializeField] private TMP_Text descriptionText;
 
     [Header("Hover Visuals")]
     [SerializeField] private Transform hoverVisual;
@@ -49,9 +48,6 @@ public class ShopItem : MonoBehaviour
 
         if (titleText != null)
             titleText.text = itemData.ItemName;
-        
-        if (descriptionText != null)
-            descriptionText.text = itemData.Description;
     }
     
     private void Update()
