@@ -94,16 +94,16 @@ public class ItemManager : MonoBehaviour
             // Organize by rarity
             switch (item.Rarity)
             {
-                case ItemRarity.Common:
+                case ItemRarity.COMMON:
                     commonItems.Add(entry);
                     break;
-                case ItemRarity.Uncommon:
+                case ItemRarity.UNCOMMON:
                     uncommonItems.Add(entry);
                     break;
-                case ItemRarity.Rare:
+                case ItemRarity.RARE:
                     rareItems.Add(entry);
                     break;
-                case ItemRarity.Legendary:
+                case ItemRarity.LEGENDARY:
                     legendaryItems.Add(entry);
                     break;
             }
@@ -117,10 +117,10 @@ public class ItemManager : MonoBehaviour
         int trials = 100000;
         Dictionary<ItemRarity, int> rarityCounts = new Dictionary<ItemRarity, int>
         {
-            { ItemRarity.Common, 0 },
-            { ItemRarity.Uncommon, 0 },
-            { ItemRarity.Rare, 0 },
-            { ItemRarity.Legendary, 0 }
+            { ItemRarity.COMMON, 0 },
+            { ItemRarity.UNCOMMON, 0 },
+            { ItemRarity.RARE, 0 },
+            { ItemRarity.LEGENDARY, 0 }
         };
 
         for (int i = 0; i < trials; i++)
@@ -201,10 +201,10 @@ public class ItemManager : MonoBehaviour
     {
         List<ItemEntry> source = rarity switch
         {
-            ItemRarity.Common => commonItems,
-            ItemRarity.Uncommon => uncommonItems,
-            ItemRarity.Rare => rareItems,
-            ItemRarity.Legendary => legendaryItems,
+            ItemRarity.COMMON => commonItems,
+            ItemRarity.UNCOMMON => uncommonItems,
+            ItemRarity.RARE => rareItems,
+            ItemRarity.LEGENDARY => legendaryItems,
             _ => null
         };
 
@@ -221,10 +221,10 @@ public class ItemManager : MonoBehaviour
     {
         return rarity switch
         {
-            ItemRarity.Common => new List<ItemEntry>(commonItems),
-            ItemRarity.Uncommon => new List<ItemEntry>(uncommonItems),
-            ItemRarity.Rare => new List<ItemEntry>(rareItems),
-            ItemRarity.Legendary => new List<ItemEntry>(legendaryItems),
+            ItemRarity.COMMON => new List<ItemEntry>(commonItems),
+            ItemRarity.UNCOMMON => new List<ItemEntry>(uncommonItems),
+            ItemRarity.RARE => new List<ItemEntry>(rareItems),
+            ItemRarity.LEGENDARY => new List<ItemEntry>(legendaryItems),
             _ => new List<ItemEntry>()
         };
     }

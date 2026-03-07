@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: Healing Area Item
   description: Adds healing area when player jumps
   icon: {fileID: 21300036, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
-  rarity: 0
+  rarity: 2
   category: 6
   canStack: 1
   maxStacks: 99

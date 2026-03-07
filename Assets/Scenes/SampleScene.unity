@@ -11050,7 +11050,7 @@ MonoBehaviour:
   m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1a1356dd96df9ec4199721a410d11e65, type: 2}
-  m_sharedMaterial: {fileID: -6869283878540803371, guid: a7ada6d2e55e84f4b9277ae25d0e9709, type: 2}
+  m_sharedMaterial: {fileID: -3596201177949799357, guid: 1a1356dd96df9ec4199721a410d11e65, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -11115,7 +11115,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &314263552
@@ -32845,8 +32845,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemManager
   commonWeight: 60
   uncommonWeight: 25
-  rareWeight: 12
-  legendaryWeight: 3
+  rareWeight: 171
+  legendaryWeight: 223.25
 --- !u!1 &1562326063
 GameObject:
   m_ObjectHideFlags: 0

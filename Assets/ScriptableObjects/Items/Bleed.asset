@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: Bleed Item
   description: Adds bleed to player attacks
   icon: {fileID: 21300030, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
-  rarity: 0
+  rarity: 3
   category: 8
   canStack: 1
   maxStacks: 99

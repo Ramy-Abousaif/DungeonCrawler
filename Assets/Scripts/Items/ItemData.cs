@@ -13,7 +13,7 @@ public class ItemData : ScriptableObject
     [SerializeField] private Sprite icon;
 
     [Header("Rarity & Categorization")]
-    [SerializeField] private ItemRarity rarity = ItemRarity.Common;
+    [SerializeField] private ItemRarity rarity = ItemRarity.COMMON;
     [SerializeField] private ItemCategory category = ItemCategory.Buff;
 
     [Header("Drop Settings")]

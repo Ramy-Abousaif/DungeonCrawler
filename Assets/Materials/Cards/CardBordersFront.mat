@@ -20,12 +20,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CardBorders
+  m_Name: CardBordersFront
   m_Shader: {fileID: -6465566751694194690, guid: a09cf2d579ab4fb479bbdc610a6fd0a4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_ValidKeywords:
+  - _RARITY_COMMON
+  m_InvalidKeywords:
+  - COMMON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -139,6 +141,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _ID: 1
+    - _IsBackface: 0
     - _MaskParallex: 0.19
     - _Metallic: 1
     - _OcclusionStrength: 1
@@ -146,6 +149,7 @@ Material:
     - _PixelSize: 1
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _RARITY: 0
     - _RainbowGlowStrength: 1.5
     - _RainbowParallex: -1.19
     - _ReceiveShadows: 1

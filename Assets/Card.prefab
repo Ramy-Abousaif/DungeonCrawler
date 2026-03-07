@@ -69,9 +69,10 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 14d98457045c4374089a881efc730cf5, type: 2}
+  - {fileID: 2100000, guid: 2d4987220b0d82640a14a23a64b89d69, type: 2}
   - {fileID: 2100000, guid: 6db4cf33bb60ec44c8fa04e0d7662d49, type: 2}
   - {fileID: 2100000, guid: cf29175946692bc4abb8b255748346e7, type: 2}
+  - {fileID: 2100000, guid: 14d98457045c4374089a881efc730cf5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -137,6 +138,15 @@ MonoBehaviour:
   positionLerpSpeed: 5
   rotationLerpSpeed: 12
   faceRotationOffset: {x: 0, y: 0, z: 0}
+  rarityImages:
+  - {fileID: 5190038829467997158}
+  - {fileID: 3431737384389329120}
+  - {fileID: 3382197350164546575}
+  - {fileID: 5626576736607995277}
+  rarityTextTargets:
+  - {fileID: 7659892077856575672}
+  rarityMaterials:
+  - {fileID: 2100000, guid: 2d4987220b0d82640a14a23a64b89d69, type: 2}
 --- !u!114 &8187457697110801370
 MonoBehaviour:
   m_ObjectHideFlags: 0

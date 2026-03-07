@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: Movement Speed Item
   description: Increases speed of player
   icon: {fileID: 21300040, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
-  rarity: 0
+  rarity: 2
   category: 16
   canStack: 1
   maxStacks: 99

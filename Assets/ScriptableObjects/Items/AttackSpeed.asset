@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: Attack Speed Item
   description: Increases attack speed of player's primary
   icon: {fileID: 21300028, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
-  rarity: 0
+  rarity: 1
   category: 16
   canStack: 1
   maxStacks: 99
