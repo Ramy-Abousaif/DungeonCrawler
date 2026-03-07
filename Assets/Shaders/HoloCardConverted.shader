@@ -3,6 +3,7 @@ Shader "Custom/HoloCardConverted"
     Properties
     {
         [MainColor] _BaseColor("Base Color", Color) = (1, 1, 1, 1)
+        _MainTex("Main Texture (Albedo)", 2D) = "white" {}
         [MainTexture] _HoloTexture("HoloTexture", 2D) = "white" {}
         [Toggle] _OpaqueMode("Opaque Mode", Float) = 0
         _DistortionAmount("DistortionAmount", Float) = 20.0
@@ -76,8 +77,11 @@ Shader "Custom/HoloCardConverted"
                 float4 tangentWS : TEXCOORD2;
                 float2 uv : TEXCOORD3;
                 float fogFactor : TEXCOORD4;
+                float2 uvAlbedo : TEXCOORD5;
             };
 
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
             TEXTURE2D(_HoloTexture);
             SAMPLER(sampler_HoloTexture);
             TEXTURECUBE(_Cubemap);
@@ -85,6 +89,7 @@ Shader "Custom/HoloCardConverted"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor;
+                float4 _MainTex_ST;
                 float4 _HoloTexture_ST;
                 float _OpaqueMode;
                 float _DistortionAmount;
@@ -159,6 +164,7 @@ Shader "Custom/HoloCardConverted"
                 OUT.tangentWS = float4(normalInputs.tangentWS.xyz, sign);
 
                 OUT.uv = TRANSFORM_TEX(IN.uv, _HoloTexture);
+                OUT.uvAlbedo = TRANSFORM_TEX(IN.uv, _MainTex);
                 OUT.fogFactor = ComputeFogFactor(positionInputs.positionCS.z);
 
                 return OUT;
@@ -195,8 +201,11 @@ Shader "Custom/HoloCardConverted"
                 float2 distortion = (float2(distortionNoiseX, distortionNoiseY) - 0.5) * (2.0 * _DistortionStrength * sideDamping);
                 float2 holoUV = baseUV + distortion;
 
+                // This albedo texture is sampled directly from mesh UVs (no view-reactive distortion).
+                float4 albedoSample = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uvAlbedo);
+                float4 combinedBaseColor = _BaseColor * albedoSample;
                 float4 holoSample = SAMPLE_TEXTURE2D(_HoloTexture, sampler_HoloTexture, holoUV);
-                float4 tintedHolo = holoSample * _BaseColor;
+                float4 tintedHolo = holoSample * combinedBaseColor;
                 float3 cubeDirWS = reflect(-normalize(viewDirWS), normalWS);
                 float4 cubeSample = SAMPLE_TEXTURECUBE(_Cubemap, sampler_Cubemap, cubeDirWS);
 
@@ -204,7 +213,7 @@ Shader "Custom/HoloCardConverted"
                 half litMask = saturate(_EnableLitShading) * saturate(_LitStrength);
                 half3 litAlbedo = tintedHolo.rgb * litMask;
                 half3 finalEmission = emissionBlend.rgb * _EmissionStrength;
-                half transparentAlpha = saturate(holoSample.a * _BaseColor.a);
+                half transparentAlpha = saturate(holoSample.a * combinedBaseColor.a);
                 half finalAlpha = lerp(transparentAlpha, 1.0h, saturate(_OpaqueMode));
 
                 InputData inputData = (InputData)0;

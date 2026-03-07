@@ -9,10 +9,10 @@ public class ShopItem : MonoBehaviour
 
     [Header("Item Data")]
     public ItemData itemData;
+    [SerializeField] private GameObject wholeCardGO;
     [SerializeField] private TMP_Text titleText;
 
     [Header("Hover Visuals")]
-    [SerializeField] private Transform hoverVisual;
     [SerializeField] private float hoverLift = 0.2f;
     [SerializeField] private float maxTilt = 8f;
     [SerializeField] private float tiltScreenRange = 180f;
@@ -27,7 +27,7 @@ public class ShopItem : MonoBehaviour
     private Vector3 baseLocalPosition;
     private Quaternion baseLocalRotation;
 
-    private Transform HoverVisual => hoverVisual != null ? hoverVisual : transform;
+    private Transform HoverVisual => wholeCardGO != null ? wholeCardGO.transform : transform;
 
     private void Awake()
     {
@@ -163,7 +163,7 @@ public class ShopItem : MonoBehaviour
             UIManager.Instance.SetShopDialogue(dialogue);
             
             ShopTooltip.Instance?.Hide();
-            gameObject.SetActive(false);
+            Destroy(wholeCardGO);
         }
         else
         {
