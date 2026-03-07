@@ -832,7 +832,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.025, y: 0.5, z: 0.025}
+  m_Size: {x: 0.025, y: 1, z: 0.025}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6100433708957848826
 MonoBehaviour:
@@ -851,7 +851,7 @@ MonoBehaviour:
   titleText: {fileID: 4931961778768462529}
   hoverVisual: {fileID: 3283388497591492848}
   hoverLift: 1
-  maxTilt: 8
+  maxTilt: 15
   tiltScreenRange: 180
   positionLerpSpeed: 5
   rotationLerpSpeed: 12
@@ -3399,7 +3399,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.025, y: 0.5, z: 0.025}
+  m_Size: {x: 0.025, y: 1, z: 0.025}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4470605650469996531
 MonoBehaviour:
@@ -3418,7 +3418,7 @@ MonoBehaviour:
   titleText: {fileID: 4123718619896387252}
   hoverVisual: {fileID: 8446511112911050153}
   hoverLift: 1
-  maxTilt: 8
+  maxTilt: 15
   tiltScreenRange: 180
   positionLerpSpeed: 5
   rotationLerpSpeed: 12
@@ -3710,7 +3710,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.025, y: 0.5, z: 0.025}
+  m_Size: {x: 0.025, y: 1, z: 0.025}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &5411751116072731660
 MonoBehaviour:
@@ -3729,7 +3729,7 @@ MonoBehaviour:
   titleText: {fileID: 9051630744471636843}
   hoverVisual: {fileID: 3795250445908621301}
   hoverLift: 1
-  maxTilt: 8
+  maxTilt: 15
   tiltScreenRange: 180
   positionLerpSpeed: 5
   rotationLerpSpeed: 12
