@@ -53,71 +53,22 @@ public class Loot : Interactable
             Quaternion.identity
         );
         
-        yield return StartCoroutine(AnimateLootBezier(lootItem));
+        yield return StartCoroutine(PickupMotionUtility.AnimateBezierLaunch(lootItem, CreateLaunchSettings()));
         
         Destroy(this.gameObject);
     }
 
-    IEnumerator AnimateLootBezier(GameObject lootItem)
+    PickupBezierLaunchSettings CreateLaunchSettings()
     {
-        Vector3 originalScale = lootItem.transform.localScale;
-        Vector3 startScale = originalScale * startScaleMultiplier;
-        lootItem.transform.localScale = startScale;
-        
-        Collider[] colliders = lootItem.GetComponents<Collider>();
-        foreach (Collider col in colliders)
+        return new PickupBezierLaunchSettings
         {
-            col.enabled = false;
-        }
-        
-        float randomAngle = Random.Range(0f, 360f);
-        Vector3 direction = Quaternion.Euler(0, randomAngle, 0) * Vector3.forward;
-        
-        direction = Quaternion.Euler(
-            Random.Range(-randomSpread, randomSpread), 
-            Random.Range(-randomSpread, randomSpread), 
-            0
-        ) * direction;
-        direction.Normalize();
-        
-        Vector3 startPoint = lootItem.transform.position;
-        Vector3 endPoint = startPoint + direction * launchDistance;
-        
-        if (Physics.Raycast(endPoint + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 100f, groundLayer))
-            endPoint = hit.point + hit.normal * groundOffset;
-        else
-            endPoint.y = groundOffset;
-
-        
-        Vector3 controlPoint = (startPoint + endPoint) / 2f + Vector3.up * arcHeight;
-        
-        float elapsedTime = 0f;
-        
-        while (elapsedTime < launchDuration && lootItem != null)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = elapsedTime / launchDuration;
-            
-            Vector3 position = Mathf.Pow(1 - t, 2) * startPoint +
-                             2 * (1 - t) * t * controlPoint +
-                             Mathf.Pow(t, 2) * endPoint;
-            
-            lootItem.transform.position = position;
-            lootItem.transform.localScale = Vector3.Lerp(startScale, originalScale, t);
-            lootItem.transform.Rotate(Random.insideUnitSphere * 200f * Time.deltaTime, Space.World);
-            
-            yield return null;
-        }
-        
-        if (lootItem != null)
-        {
-            foreach (Collider col in colliders)
-            {
-                col.enabled = true;
-            }
-            
-            lootItem.transform.position = endPoint;
-            lootItem.transform.localScale = originalScale;
-        }
+            arcHeight = arcHeight,
+            launchDistance = launchDistance,
+            launchDuration = launchDuration,
+            randomSpread = randomSpread,
+            groundLayer = groundLayer,
+            startScaleMultiplier = startScaleMultiplier,
+            groundOffset = groundOffset
+        };
     }
 }

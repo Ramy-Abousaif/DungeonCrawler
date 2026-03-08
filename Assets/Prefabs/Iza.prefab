@@ -1423,6 +1423,7 @@ GameObject:
   - component: {fileID: 2780507243564260280}
   - component: {fileID: 8004393358841374183}
   - component: {fileID: 6237199290600182971}
+  - component: {fileID: 6433209997107398758}
   m_Layer: 7
   m_Name: Iza
   m_TagString: Enemy
@@ -1618,6 +1619,22 @@ MonoBehaviour:
   AlignmentPixelSize: 5
   GetPixelSizeFromMaterial: 1
   ConfigureChildren: 1
+--- !u!114 &6433209997107398758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6713366170485265699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a06daed5488bee349abcdc3b1fee3e68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyGoldDropper
+  goldPickupPrefab: {fileID: 4165421632639223343, guid: 2edf91c9a5451b7438fba0038778e68d, type: 3}
+  minDropCount: 2
+  maxDropCount: 6
+  goldPerPickup: 1
 --- !u!1 &7213139211725733565
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +13,7 @@ public class UIManager : MonoBehaviour
     [Header("Player Stats")]
     [SerializeField] private Image healthBar;
     [SerializeField] private TMP_Text healthNumber;
+    [SerializeField] private TMP_Text goldAmountText;
 
     [Header("Shop UI")]
     [SerializeField] private Image blackScreen;
@@ -23,6 +25,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image[] abilityIcons;
     [SerializeField] private TMP_Text[] abilityCDTexts;
 
+    private PlayerInventory goldInventory;
+    private Coroutine waitForGoldInventoryRoutine;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,6 +37,25 @@ public class UIManager : MonoBehaviour
         }
 
         Instance = this;
+    }
+
+    private void OnEnable()
+    {
+        TryBindGoldCounter();
+
+        if (goldInventory == null && waitForGoldInventoryRoutine == null)
+            waitForGoldInventoryRoutine = StartCoroutine(WaitForGoldInventory());
+    }
+
+    private void OnDisable()
+    {
+        if (waitForGoldInventoryRoutine != null)
+        {
+            StopCoroutine(waitForGoldInventoryRoutine);
+            waitForGoldInventoryRoutine = null;
+        }
+
+        UnbindGoldCounter();
     }
 
     public void UpdateHealth(float currentHealth, float maxHealth)
@@ -87,6 +111,55 @@ public class UIManager : MonoBehaviour
         }
 
         shopDialogueText.text = dialogue ?? string.Empty;
+    }
+
+    public void UpdateGoldAmount(int amount)
+    {
+        if (goldAmountText == null)
+            return;
+
+        goldAmountText.text = amount.ToString("N0");
+    }
+
+    private IEnumerator WaitForGoldInventory()
+    {
+        while (goldInventory == null)
+        {
+            TryBindGoldCounter();
+            if (goldInventory != null)
+                break;
+
+            yield return null;
+        }
+
+        waitForGoldInventoryRoutine = null;
+    }
+
+    private void TryBindGoldCounter()
+    {
+        if (goldInventory != null)
+            return;
+
+        if (PlayerInventory.Instance == null)
+            return;
+
+        goldInventory = PlayerInventory.Instance;
+        goldInventory.OnGoldChanged += HandleGoldChanged;
+        HandleGoldChanged(goldInventory.GetGold());
+    }
+
+    private void UnbindGoldCounter()
+    {
+        if (goldInventory == null)
+            return;
+
+        goldInventory.OnGoldChanged -= HandleGoldChanged;
+        goldInventory = null;
+    }
+
+    private void HandleGoldChanged(int newAmount)
+    {
+        UpdateGoldAmount(newAmount);
     }
 
     public static float NormalizeFill(float currentFill, float fillMax)
